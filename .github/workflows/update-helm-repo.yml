@@ -1,0 +1,57 @@
+# Note this workflow is only maintained in this repo
+# It should be invoked from each chart's repo
+#
+# This invokes the workflow named 'publish-charts' in the umbrella repo
+# It expects to have a secret called UMBRELLA_REPO_PAT which contains
+# the GitHub token that has permissions to invoke workflows and commit code
+# inside the umbrella-repo.
+# The following fine-grained permissions were used in testing and were limited
+# to the umbrella repo only:
+# - Actions: r/w
+# - Commit statuses: r/w
+# - Contents: r/w
+# - Deployments: r/w
+# - Pages: r/w
+
+name: vp-patterns/update-umbrella-repo
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  # FIXME(bandini): this needs changing to the final repo
+  helmlint:
+    uses: mbaldessari/common-github/.github/workflows/helmlint.yml@main
+    permissions:
+      contents: read
+
+  update-umbrella-repo:
+    needs: [helmlint]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - name: Verify Chart version matches tag version
+        run: |-
+          export TAG=${{ github.ref_name }}
+          git_tag="${TAG#v}"
+          chart_tag=$(yq -r '.version' Chart.yaml)
+          if [ "${git_tag}" != "${chart_tag}" ]; then
+            echo "chart version (${chart_tag}) did not match git version (${git_tag})"
+            exit 1
+          fi
+
+      - name: Invoke umbrella-repo publish charts workflow
+        id: update
+        env:
+          GH_TOKEN: ${{ secrets.UMBRELLA_REPO_PAT }}
+        run: |-
+          # FIXME(bandini): rename this to the final repo
+          gh workflow run publish-charts.yml \
+            --repo mbaldessari/charts-test \
+            --ref main \
+            -f SOURCE_TAG="${{ github.ref_name }}" \
+            -f SOURCE_REPO="${{ github.repository }}"

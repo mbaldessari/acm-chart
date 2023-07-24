@@ -1,0 +1,24 @@
+# Use like:
+
+# name: Lint GitHub Actions Workflows
+# on:
+#   push:
+#     paths:
+#     - '.github/workflows/**'
+# jobs:
+#   actionlint:
+#     # using `main` as the ref will keep your workflow up-to-date
+#     uses: mbaldessari/common-github/.github/workflows/actionlint.yaml@main
+
+name: Lint GitHub Actions Workflows
+
+on:
+  workflow_call: {}
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Check workflow files"
+        uses: docker://docker.mirror.hashicorp.services/rhysd/actionlint:latest
