@@ -1,5 +1,5 @@
 apiVersion: v2
-description: A Helm chart to configure Advanced Cluster Manager for OpenShift. test15
+description: A Helm chart to configure Advanced Cluster Manager for OpenShift. test17
 keywords:
 - pattern
 name: acm
