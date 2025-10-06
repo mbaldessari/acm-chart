@@ -1,6 +1,7 @@
 # TODO: Also create a GitOpsCluster.apps.open-cluster-management.io
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
+{{- if $.Values.global.multiSourceRepoUrl }}
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -40,9 +41,9 @@ spec:
                     - repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}
                       targetRevision: {{ coalesce .targetRevision $.Values.global.targetRevision }}
                       ref: patternref
-                    - repoURL: {{ $.Values.global.multiSourceRepoUrl }}
-                      targetRevision: {{ $.Values.global.multiSourceTargetRevision }}
-                      chart: clustergroup
+                    - repoURL: https://github.com/mbaldessari/clustergroup-chart
+                      path: .
+                      targetRevision: argoprojects
                       helm:
                         ignoreMissingValueFiles: true
                         values: |
