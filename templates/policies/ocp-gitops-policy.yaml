@@ -124,7 +124,8 @@ spec:
                   name: openshift-gitops
                   namespace: openshift-gitops
                 spec:
-                  # image: quay.io/rhn_support_mbaldess/argocd@sha256:1190e6214d13f188bd3092754950ed4b3f79b5ab47391e93b11d121553ce04c4
+                  image: quay.io/rhn_support_mbaldess/argocd
+                  version: with_patch
                   applicationSet:
                     resources:
                       limits:
@@ -139,7 +140,6 @@ spec:
                       route:
                         enabled: false
                   controller:
-                    image: quay.io/rhn_support_mbaldess/argocd@sha256:1190e6214d13f188bd3092754950ed4b3f79b5ab47391e93b11d121553ce04c4
                     processors: {}
                     resources:
                       limits:
@@ -247,7 +247,6 @@ spec:
                       - TaskRun
                       - PipelineRun
                   server:
-                    image: quay.io/rhn_support_mbaldess/argocd@sha256:1190e6214d13f188bd3092754950ed4b3f79b5ab47391e93b11d121553ce04c4
                     autoscale:
                       enabled: false
                     grpc:
