@@ -1,3 +1,10 @@
+$eso_ns := "golang-external-secrets"
+{{- range .Values.clusterGroup.applications }}
+  {{- if eq .chart "openshift-external-secrets" }}
+    {{- $eso_ns = "external-secrets" }}
+  {{- end }}
+{{- end }}
+
 # This pushes out the HUB's Certificate Authorities on to the imported clusters
 {{- if .Values.clusterGroup.isHubCluster }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
@@ -91,7 +98,7 @@ spec:
           severity: medium
           namespaceSelector:
             include:
-              - default
+              - {{ $eso_ns }}
           object-templates:
             - complianceType: mustonlyhave
               objectDefinition:
@@ -100,7 +107,7 @@ spec:
                 type: Opaque
                 metadata:
                   name: hub-ca
-                  namespace: golang-external-secrets
+                  namespace: {{ $eso_ns }}
                 data:
                   hub-kube-root-ca.crt: '{{ `{{hub fromConfigMap "" "kube-root-ca.crt" "ca.crt" | base64enc hub}}` }}'
                   hub-openshift-service-ca.crt: '{{ `{{hub fromConfigMap "" "openshift-service-ca.crt" "service-ca.crt" | base64enc hub}}` }}'
