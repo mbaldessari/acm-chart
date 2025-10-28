@@ -1,4 +1,4 @@
-$eso_ns := "golang-external-secrets"
+{{- $eso_ns := "golang-external-secrets" }}
 {{- range .Values.clusterGroup.applications }}
   {{- if eq .chart "openshift-external-secrets" }}
     {{- $eso_ns = "external-secrets" }}
