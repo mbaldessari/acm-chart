@@ -1,6 +1,6 @@
 {{- $eso_ns := "golang-external-secrets" }}
 {{- range .Values.clusterGroup.applications }}
-  {{- if eq .chart "openshift-external-secrets" }}
+  {{- if eq .name "openshift-external-secrets" }}
     {{- $eso_ns = "external-secrets" }}
   {{- end }}
 {{- end }}
@@ -99,6 +99,7 @@ spec:
           namespaceSelector:
             include:
               - {{ $eso_ns }}
+              - default
           object-templates:
             - complianceType: mustonlyhave
               objectDefinition:
