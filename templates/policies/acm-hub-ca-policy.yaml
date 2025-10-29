@@ -89,6 +89,10 @@ spec:
         spec:
           remediationAction: enforce
           severity: medium
+          namespaceSelector:
+            include:
+              - external-secrets
+              - golang-external-secrets
           object-templates:
             - complianceType: mustonlyhave
               objectDefinition:
