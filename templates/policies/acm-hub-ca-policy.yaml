@@ -1,7 +1,7 @@
 {{- $eso_ns := "golang-external-secrets" }}
 {{- range .Values.clusterGroup.applications }}
   {{- if or (eq .chart "openshift-external-secrets") (and (hasKey . "repoURL") .repoURL (hasSuffix "openshift-external-secrets" .repoURL)) (and (hasKey . "repoURL") .repoURL (hasSuffix "openshift-external-secrets-chart" .repoURL)) }}
-    {{- $eso_ns := "external-secrets" }}
+    {{- $eso_ns = "external-secrets" }}
   {{- end }}
 {{- end }}
 
