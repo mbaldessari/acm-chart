@@ -89,6 +89,7 @@ spec:
         spec:
           remediationAction: enforce
           severity: medium
+          # Here we need to put any namespace that might be rendered in the template
           namespaceSelector:
             include:
               - external-secrets
