@@ -89,7 +89,7 @@ spec:
                         {{- end }}
                       valueFiles:
                       {{- include "acm.app.policies.valuefiles" . | nindent 22 }}
-                      {{- include "acm.app.policies.sharedvaluefiles" . | nindent 22 }}
+                      {{- include "acm.app.policies.sharedvaluefiles" $group | nindent 22 }}
                       {{- range $valueFile := .extraValueFiles }}
                       - {{ $valueFile | quote }}
                       {{- end }}
