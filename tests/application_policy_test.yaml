@@ -87,3 +87,57 @@ tests:
           path: spec.clusterSelector.matchLabels.clusterGroup
           value: group-two
 
+  - it: Should render sharedValueFiles in single-source mode
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      clusterGroup:
+        managedClusterGroups:
+          exampleRegion:
+            name: group-test
+            sharedValueFiles:
+              - '/test/values-{{ $.Values.global.clusterPlatform }}.yaml'
+              - '/test/values-{{ $.Values.clusterGroup.name }}.yaml'
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-test-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.source.helm.valueFiles
+          content: '{{ tpl "/test/values-{{ $.Values.global.clusterPlatform }}.yaml" $ }}'
+      - documentSelector:
+          path: metadata.name
+          value: group-test-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.source.helm.valueFiles
+          content: '{{ tpl "/test/values-{{ $.Values.clusterGroup.name }}.yaml" $ }}'
+
+  - it: Should render sharedValueFiles in multi-source mode
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: https://charts.validatedpatterns.io/
+        multiSourceTargetRevision: main
+      clusterGroup:
+        managedClusterGroups:
+          exampleRegion:
+            name: group-test
+            sharedValueFiles:
+              - '/test/values-{{ $.Values.global.clusterPlatform }}.yaml'
+              - '/test/values-{{ $.Values.clusterGroup.name }}.yaml'
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-test-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.sources[1].helm.valueFiles
+          content: '{{ tpl "/test/values-{{ $.Values.global.clusterPlatform }}.yaml" $ }}'
+      - documentSelector:
+          path: metadata.name
+          value: group-test-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.sources[1].helm.valueFiles
+          content: '{{ tpl "/test/values-{{ $.Values.clusterGroup.name }}.yaml" $ }}'
+
