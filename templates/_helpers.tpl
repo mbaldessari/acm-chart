@@ -60,9 +60,11 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 
 {{- define "acm.app.policies.sharedvaluefiles" -}}
 - /zozzo.yaml
+- foo-{{ .sharedValueFiles }}
 {{- range $valueFile := .sharedValueFiles }}
 - '{{ `{{ tpl ` }}{{ $valueFile | quote }}{{ ` $ }}` }}'
 {{- end }}
+- /zozzoend.yaml
 {{- end }} {{- /*acm.app.policies.sharedvaluefiles */}}
 
 {{- define "acm.app.clusterSelector" -}}
