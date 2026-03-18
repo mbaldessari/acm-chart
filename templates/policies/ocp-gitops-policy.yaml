@@ -139,7 +139,7 @@ spec:
                   namespace: openshift-gitops
                 spec:
                   image: quay.io/rhn_support_mbaldess/argocd
-                  version: master_with_patch
+                  version: master_without_patch
                   applicationSet:
                     resources:
                       limits:
