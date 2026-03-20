@@ -152,6 +152,9 @@ spec:
                       route:
                         enabled: false
                   controller:
+                    env:
+                      - name: ARGOCD_APPLICATION_CONTROLLER_SYNC_TIMEOUT
+                        value: "300"
                     processors: {}
                     resources:
                       limits:
