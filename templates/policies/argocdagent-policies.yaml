@@ -4,11 +4,14 @@
 ---
 apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
+metadata:
+ name: {{ .name }}-argocdagent
+ namespace: {{ $.Values.global.pattern }}-{{ .name }}
 spec:
   placementRef:
     kind: Placement
-    name: argocd-managed-clusters
-    namespace: openshift-gitops
+    name: {{ .name }}-argocdagent-placement
+    namespace: {{ $.Values.global.pattern }}-{{ .name }}
   gitopsAddon:
     enabled: true
     argoCDAgent:
