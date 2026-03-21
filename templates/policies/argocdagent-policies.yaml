@@ -23,7 +23,7 @@ spec:
     name: {{ .name }}-argocdagent-placement
   argoServer:
     cluster: local-cluster
-    argoNamespace: openshift-gitops
+    argoNamespace: argoagent-hub
   gitopsAddon:
     enabled: true
     argoCDAgent:
