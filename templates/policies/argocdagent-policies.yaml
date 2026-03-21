@@ -1,0 +1,30 @@
+{{- if eq (include "acm.ishubcluster" .) "true" }}
+{{- range .Values.clusterGroup.managedClusterGroups }}
+{{- $group := . }}
+---
+apiVersion: apps.open-cluster-management.io/v1beta1
+kind: GitOpsCluster
+spec:
+  placementRef:
+    kind: Placement
+    name: argocd-managed-clusters
+    namespace: openshift-gitops
+  gitopsAddon:
+    enabled: true
+    argoCDAgent:
+      enabled: true
+      mode: managed
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: {{ .name }}-argocdagent-placement
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+{{- include "acm.app.clusterSelector" (dict
+  "clusterSelector" .clusterSelector
+  "group" $group
+  ) | nindent 2 }}
+{{- end }}{{/* range .Values.clusterGroup.managedClusterGroups */}}
+{{- end }}{{/* ishubcluster */}}
