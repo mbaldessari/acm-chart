@@ -1,4 +1,13 @@
 {{- if eq (include "acm.ishubcluster" .) "true" }}
+---
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  name: default
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  clusterSet: default
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
 ---
