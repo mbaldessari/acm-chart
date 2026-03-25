@@ -235,6 +235,25 @@ spec:
                         name: trusted-hub-bundle
                       - mountPath: /tmp/ca-bundles
                         name: ca-bundles
+                    sidecarContainers:
+                    - name: cmp-shared-valuefiles
+                      command:
+                      - /var/run/argocd/argocd-cmp-server
+                      image: {{ $.Values.acm.pluginImage }}
+                      env:
+                      - name: HOME
+                        value: /tmp
+                      securityContext:
+                        runAsNonRoot: true
+                      volumeMounts:
+                      - mountPath: /var/run/argocd
+                        name: var-files
+                      - mountPath: /home/argocd/cmp-server/plugins
+                        name: plugins
+                      - mountPath: /tmp
+                        name: cmp-tmp
+                      - mountPath: /etc/pki/tls/certs
+                        name: ca-bundles
                     resources:
                       limits:
                         cpu: "1"
@@ -257,6 +276,8 @@ spec:
                       name: trusted-hub-bundle
                     - emptyDir: {}
                       name: ca-bundles
+                    - emptyDir: {}
+                      name: cmp-tmp
                   resourceExclusions: |-
                     - apiGroups:
                       - tekton.dev
