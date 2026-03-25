@@ -1,0 +1,10 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: helm-shared-valuefiles
+spec:
+  generate:
+    command: ["/bin/bash", "/scripts/generate.sh"]
+  discover:
+    find:
+      glob: "**/*"

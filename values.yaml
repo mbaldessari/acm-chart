@@ -77,6 +77,9 @@ acm:
     source: redhat-operators
     # -- Default gitops channel to install on remote clusters
     channel: "gitops-1.18"
+    # -- ArgoCD image for the CMP sidecar (must have argocd-cmp-server + helm + git)
+    # For OpenShift use: registry.redhat.io/openshift-gitops-1/argocd-rhel9:<tag>
+    cmpImage: "quay.io/argoproj/argocd:v2.13.0"
 
 
 # -- Default secretstore configuration variables
