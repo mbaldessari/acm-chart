@@ -242,7 +242,7 @@ spec:
                     - name: cmp-shared-valuefiles
                       command:
                       - /var/run/argocd/argocd-cmp-server
-                      image: {{ coalesce $.Values.acm.spokeGitops.cmpImage "quay.io/argoproj/argocd:v2.13.0" }}
+                      image: '{{ `{{ (index (lookup "apps/v1" "Deployment" "openshift-gitops" "openshift-gitops-repo-server").spec.template.spec.containers 0).image }}` }}'
                       env:
                       - name: HOME
                         value: /tmp
