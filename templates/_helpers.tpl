@@ -85,33 +85,6 @@ values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "C
 values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml
 {{- end }} {{- /*acm.app.policies.plugin.valuefiles */}}
 
-{{/*
-Helm --set-string parameters for the CMP plugin env (newline-separated name=value).
-global.namespace is handled by the CMP script via ARGOCD_APP_NAMESPACE env var.
-*/}}
-{{- define "acm.app.policies.plugin.helmset" -}}
-global.repoURL={{ $.Values.global.repoURL }}
-global.originURL={{ $.Values.global.originURL }}
-global.targetRevision={{ $.Values.global.targetRevision }}
-global.pattern={{ $.Values.global.pattern }}
-global.hubClusterDomain={{ $.Values.global.hubClusterDomain }}
-global.localClusterDomain={{ `{{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }}` }}
-global.clusterDomain={{ `{{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain | replace "apps." "" }}` }}
-global.clusterVersion={{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}
-global.localClusterName={{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}
-global.clusterPlatform={{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}
-global.multiSourceSupport={{ $.Values.global.multiSourceSupport }}
-global.multiSourceRepoUrl={{ $.Values.global.multiSourceRepoUrl }}
-global.multiSourceTargetRevision={{ $.Values.global.multiSourceTargetRevision }}
-global.privateRepo={{ $.Values.global.privateRepo }}
-global.experimentalCapabilities={{ $.Values.global.experimentalCapabilities }}
-{{- if eq $.Values.global.deletePattern "DeleteSpokeChildApps" }}
-global.deletePattern=DeleteChildApps
-{{- else }}
-global.deletePattern={{ $.Values.global.deletePattern }}
-{{- end }}
-global.gitOpsSubNamespace={{ $.Values.global.gitOpsSubNamespace }}
-{{- end }} {{- /*acm.app.policies.plugin.helmset */}}
 
 {{- define "acm.app.clusterSelector" -}}
 {{- $cs := .clusterSelector -}}
