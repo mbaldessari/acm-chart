@@ -78,6 +78,9 @@ acm:
     # -- Default gitops channel to install on remote clusters
     channel: "gitops-1.18"
 
+  # -- Container image for the ArgoCD CMP sidecar plugin on spoke clusters
+  pluginImage: quay.io/rhn_support_mbaldess/vp-argocd-plugin:latest
+
 
 # -- Default secretstore configuration variables
 # @default -- depends on the individual settings

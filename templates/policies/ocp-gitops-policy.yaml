@@ -131,17 +131,6 @@ spec:
           object-templates:
             - complianceType: mustonlyhave
               objectDefinition:
-                apiVersion: v1
-                kind: Secret
-                metadata:
-                  name: cmp-shared-valuefiles
-                  namespace: openshift-gitops
-                type: Opaque
-                data:
-                  plugin.yaml: {{ $.Files.Get "files/cmp/plugin.yaml" | b64enc }}
-                  generate.sh: {{ $.Files.Get "files/cmp/generate.sh" | b64enc }}
-            - complianceType: mustonlyhave
-              objectDefinition:
                 apiVersion: argoproj.io/v1beta1
                 kind: ArgoCD
                 metadata:
@@ -242,7 +231,7 @@ spec:
                     - name: cmp-shared-valuefiles
                       command:
                       - /var/run/argocd/argocd-cmp-server
-                      image: '{{ `{{ (index (lookup "apps/v1" "Deployment" "openshift-gitops" "openshift-gitops-repo-server").spec.template.spec.containers 0).image }}` }}'
+                      image: {{ $.Values.acm.pluginImage }}
                       env:
                       - name: HOME
                         value: /tmp
@@ -253,12 +242,6 @@ spec:
                         name: var-files
                       - mountPath: /home/argocd/cmp-server/plugins
                         name: plugins
-                      - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-                        name: cmp-shared-valuefiles
-                        subPath: plugin.yaml
-                      - mountPath: /scripts/generate.sh
-                        name: cmp-shared-valuefiles
-                        subPath: generate.sh
                       - mountPath: /tmp
                         name: cmp-tmp
                       - mountPath: /etc/pki/tls/certs
@@ -285,10 +268,6 @@ spec:
                       name: trusted-hub-bundle
                     - emptyDir: {}
                       name: ca-bundles
-                    - secret:
-                        secretName: cmp-shared-valuefiles
-                        defaultMode: 0755
-                      name: cmp-shared-valuefiles
                     - emptyDir: {}
                       name: cmp-tmp
                   resourceExclusions: |-
