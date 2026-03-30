@@ -82,7 +82,7 @@ spec:
                               {{- end }}
                           {{- include "acm.app.policies.helmparameters" $ | nindent 26 }}
                           - name: clusterGroup.name
-                            value: {{ $group.name }}
+                            value: {{ $group.name | quote }}
                           {{- range $k, $v := $.Values.extraParametersNested }}
                           - name: {{ $k }}
                             value: {{ printf "%s" $v | quote }}
@@ -99,16 +99,16 @@ spec:
                               {{- end }}
                           {{- if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "clusterGroupGitRepoUrl") }}
                           - name: PARAM_CHART_GIT_URL
-                            value: {{ $clusterGroupGitRepoUrl }}
+                            value: {{ $clusterGroupGitRepoUrl | quote }}
                           - name: PARAM_CHART_GIT_REVISION
-                            value: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision }}
+                            value: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision | quote }}
                           {{- else }}
                           - name: PARAM_CHART_REPO_URL
-                            value: {{ coalesce $clusterGroupGitRepoUrl $.Values.global.multiSourceRepoUrl }}
+                            value: {{ coalesce $clusterGroupGitRepoUrl $.Values.global.multiSourceRepoUrl | quote }}
                           - name: PARAM_CHART_NAME
-                            value: clustergroup
+                            value: "clustergroup"
                           - name: PARAM_CHART_VERSION
-                            value: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision }}
+                            value: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision | quote }}
                           {{- end }}
                   {{- else }}
                   source:
@@ -126,7 +126,7 @@ spec:
                             {{- end }}
                         {{- include "acm.app.policies.helmparameters" $ | nindent 24 }}
                         - name: clusterGroup.name
-                          value: {{ $group.name }}
+                          value: {{ $group.name | quote }}
                         {{- range $k, $v := $.Values.extraParametersNested }}
                         - name: {{ $k }}
                           value: {{ printf "%s" $v | quote }}

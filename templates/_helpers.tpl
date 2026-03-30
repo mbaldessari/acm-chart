@@ -27,17 +27,17 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 
 {{- define "acm.app.policies.helmparameters" -}}
 - name: global.repoURL
-  value: {{ $.Values.global.repoURL }}
+  value: {{ $.Values.global.repoURL | default "" | quote }}
 - name: global.originURL
-  value: {{ $.Values.global.originURL }}
+  value: {{ $.Values.global.originURL | default "" | quote }}
 - name: global.targetRevision
-  value: {{ $.Values.global.targetRevision }}
+  value: {{ $.Values.global.targetRevision | default "" | quote }}
 - name: global.namespace
   value: $ARGOCD_APP_NAMESPACE
 - name: global.pattern
-  value: {{ $.Values.global.pattern }}
+  value: {{ $.Values.global.pattern | default "" | quote }}
 - name: global.hubClusterDomain
-  value: {{ $.Values.global.hubClusterDomain }}
+  value: {{ $.Values.global.hubClusterDomain | default "" | quote }}
 - name: global.localClusterDomain
   value: '{{ `{{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }}` }}'
 - name: global.clusterDomain
@@ -49,26 +49,26 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 - name: global.clusterPlatform
   value: '{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}'
 - name: global.multiSourceSupport
-  value: {{ $.Values.global.multiSourceSupport | quote }}
+  value: {{ $.Values.global.multiSourceSupport | default "" | quote }}
 - name: global.multiSourceRepoUrl
-  value: {{ $.Values.global.multiSourceRepoUrl }}
+  value: {{ $.Values.global.multiSourceRepoUrl | default "" | quote }}
 - name: global.multiSourceTargetRevision
-  value: {{ $.Values.global.multiSourceTargetRevision }}
+  value: {{ $.Values.global.multiSourceTargetRevision | default "" | quote }}
 - name: global.privateRepo
-  value: {{ $.Values.global.privateRepo | quote }}
+  value: {{ $.Values.global.privateRepo | default "" | quote }}
 - name: global.experimentalCapabilities
-  value: {{ $.Values.global.experimentalCapabilities }}
+  value: {{ $.Values.global.experimentalCapabilities | default "" | quote }}
 {{/*
 if this chart gets DeleteSpokeChildApps, it will set deletePattern to DeleteChildApps to remove the child apps from spokes
 */}}
 - name: global.deletePattern
-  {{- if eq $.Values.global.deletePattern "DeleteSpokeChildApps" }}
-  value: DeleteChildApps
+  {{- if and $.Values.global.deletePattern (eq $.Values.global.deletePattern "DeleteSpokeChildApps") }}
+  value: "DeleteChildApps"
   {{- else }}
-  value: {{ $.Values.global.deletePattern }}
+  value: {{ $.Values.global.deletePattern | default "" | quote }}
   {{- end }}
 - name: global.gitOpsSubNamespace
-  value: {{ $.Values.global.gitOpsSubNamespace }}
+  value: {{ $.Values.global.gitOpsSubNamespace | default "" | quote }}
 {{- end }} {{- /*acm.app.policies.helmparameters */}}
 
 {{/*

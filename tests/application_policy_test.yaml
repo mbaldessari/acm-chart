@@ -276,7 +276,7 @@ tests:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].plugin.env
           content:
             name: global.deletePattern
-            value: null
+            value: ""
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
