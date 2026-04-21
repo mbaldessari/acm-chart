@@ -2,7 +2,7 @@
 main:
   gitops:
     # -- DEPRECATED: Default gitops channel to install on remote clusters (Use acm.spokeGitops.channel)
-    channel: "gitops-1.18"
+    channel: "gitops-1.20"
 
 global:
   # -- List of additional value files to be passed to the pattern
@@ -78,7 +78,7 @@ acm:
   spokeGitops:
     source: redhat-operators
     # -- Default gitops channel to install on remote clusters
-    channel: "gitops-1.18"
+    channel: "gitops-1.20"
 
   # -- Container image for the ArgoCD CMP sidecar plugin on spoke clusters
   pluginImage: quay.io/rhn_support_mbaldess/vp-argocd-plugin:latest

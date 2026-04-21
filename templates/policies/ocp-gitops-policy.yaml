@@ -35,7 +35,7 @@ spec:
                   name: openshift-gitops-operator
                   namespace: {{ if $.Values.global.gitOpsSubNamespace }}{{ $.Values.global.gitOpsSubNamespace }}{{ else }}openshift-operators{{ end }}
                 spec:
-                  channel: {{- if and $.Values.acm.spokeGitops $.Values.acm.spokeGitops.channel }} {{ $.Values.acm.spokeGitops.channel }}{{- else if and $.Values.main $.Values.main.gitops $.Values.main.gitops.channel }} {{ $.Values.main.gitops.channel }}{{- else }} gitops-1.18{{- end }}
+                  channel: {{- if and $.Values.acm.spokeGitops $.Values.acm.spokeGitops.channel }} {{ $.Values.acm.spokeGitops.channel }}{{- else if and $.Values.main $.Values.main.gitops $.Values.main.gitops.channel }} {{ $.Values.main.gitops.channel }}{{- else }} gitops-1.20{{- end }}
                   installPlanApproval: Automatic
                   name: openshift-gitops-operator
                   source: {{- if and $.Values.acm.spokeGitops $.Values.acm.spokeGitops.source }} {{ $.Values.acm.spokeGitops.source }}{{- else if and $.Values.main $.Values.main.gitops $.Values.main.gitops.operatorSource }} {{ $.Values.main.gitops.operatorSource }}{{- else }} redhat-operators{{- end }}
