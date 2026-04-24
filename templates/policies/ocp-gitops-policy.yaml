@@ -254,6 +254,9 @@ spec:
                         name: cmp-tmp
                       - mountPath: /etc/pki/tls/certs
                         name: ca-bundles
+                      - mountPath: /var/run/vp-git-credentials
+                        name: vp-git-credentials
+                        readOnly: true
                     resources:
                       limits:
                         cpu: "1"
@@ -278,6 +281,10 @@ spec:
                       name: ca-bundles
                     - emptyDir: {}
                       name: cmp-tmp
+                    - name: vp-git-credentials
+                      secret:
+                        secretName: vp-private-repo-credentials
+                        optional: true
                   resourceExclusions: |-
                     - apiGroups:
                       - tekton.dev
