@@ -56,6 +56,7 @@ spec:
                   finalizers:
                   - resources-finalizer.argocd.argoproj.io/foreground
                 spec:
+                  project: default
                   {{- $clusterGroupGitRepoUrl := "" }}
                   {{- $clusterGroupChartGitRevision := "" }}
                   {{- if and $.Values.main $.Values.main.multiSourceConfig }}
