@@ -81,7 +81,7 @@ acm:
     channel: "gitops-1.20"
 
   # -- Container image for the ArgoCD CMP sidecar plugin on spoke clusters
-  pluginImage: quay.io/rhn_support_mbaldess/vp-argocd-plugin@sha256:8480300dc9a7ecadba80494398095ef966d73c825589e4988e47f5e7ee321d68
+  pluginImage: quay.io/rhn_support_mbaldess/vp-argocd-plugin@sha256:b2f5f1f0e1d8bb5eba9c114e8010185386ebb5c789e7548b407603e7ee93cdec
 
 
 # -- Default secretstore configuration variables
