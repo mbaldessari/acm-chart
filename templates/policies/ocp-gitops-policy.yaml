@@ -129,7 +129,7 @@ spec:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: {{ .name }}-gitops-config-argocd
+          name: {{ .name }}-gitops-prereqs-argocd
         spec:
           remediationAction: enforce
           severity: medium
@@ -182,6 +182,18 @@ spec:
                     server: '*'
                   sourceRepos:
                   - '*'
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: {{ .name }}-gitops-config-argocd
+        spec:
+          remediationAction: enforce
+          severity: medium
+          namespaceSelector:
+            include:
+              - default
+          object-templates:
             - complianceType: mustonlyhave
               objectDefinition:
                 apiVersion: argoproj.io/v1beta1
@@ -415,6 +427,9 @@ spec:
                   location: ApplicationMenu
                   text: Argo CD VP
             {{- end }}
+      dependencies:
+        - name: {{ .name }}-gitops-prereqs-argocd
+          compliance: Compliant
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
