@@ -209,6 +209,31 @@ spec:
                       route:
                         enabled: false
                   controller:
+                    initContainers:
+                    - name: wait-for-appproject
+                      image: registry.redhat.io/ubi9/ubi-minimal:latest
+                      command:
+                      - bash
+                      - -c
+                      - |
+                        NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+                        TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+                        API="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}"
+                        URL="${API}/apis/argoproj.io/v1alpha1/namespaces/${NS}/appprojects/default"
+                        echo "Waiting for default AppProject in ${NS}..."
+                        for i in $(seq 1 60); do
+                          CODE=$(curl -s -o /dev/null -w '%{http_code}' -k \
+                            -H "Authorization: Bearer ${TOKEN}" "${URL}")
+                          if [ "${CODE}" = "200" ]; then
+                            echo "Default AppProject found"
+                            exit 0
+                          fi
+                          echo "Attempt ${i}/60: AppProject not ready (HTTP ${CODE}), waiting 5s..."
+                          sleep 5
+                        done
+                        echo "ERROR: default AppProject not found after 300s"
+                        exit 1
+                      resources: {}
                     processors: {}
                     resources:
                       limits:
