@@ -13,6 +13,11 @@ metadata:
 spec:
   remediationAction: enforce
   disabled: false
+  dependencies:
+    - name: {{ .name }}-gitops-policy-argocd
+      compliance: Compliant
+      kind: Policy
+      apiVersion: policy.open-cluster-management.io/v1
   policy-templates:
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
