@@ -107,14 +107,10 @@ spec:
   "group" $group
   ) | nindent 2 }}
 ---
-# This policy depends on openshift-gitops-policy and the reason is that we need to be
-# certain that the trusted-ca-bundle exists before spawning the clusterwide argocd instance
-# because the initcontainer references the trusted-ca-bundle and if it starts without the
-# configmap being there we risk running an argo instances that won't trust public CAs
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: {{ .name }}-gitops-policy-argocd
+  name: {{ .name }}-gitops-prereqs-argocd
   annotations:
     policy.open-cluster-management.io/standards: NIST-CSF
     policy.open-cluster-management.io/categories: PR.DS Data Security
@@ -182,6 +178,25 @@ spec:
                     server: '*'
                   sourceRepos:
                   - '*'
+---
+# This policy depends on openshift-gitops-policy and the reason is that we need to be
+# certain that the trusted-ca-bundle exists before spawning the clusterwide argocd instance
+# because the initcontainer references the trusted-ca-bundle and if it starts without the
+# configmap being there we risk running an argo instances that won't trust public CAs
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: {{ .name }}-gitops-policy-argocd
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-CSF
+    policy.open-cluster-management.io/categories: PR.DS Data Security
+    policy.open-cluster-management.io/controls: PR.DS-1 Data-at-rest
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
@@ -430,6 +445,8 @@ spec:
       dependencies:
         - name: {{ .name }}-gitops-prereqs-argocd
           compliance: Compliant
+          kind: Policy
+          apiVersion: policy.open-cluster-management.io/v1
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
@@ -443,6 +460,9 @@ placementRef:
   apiGroup: cluster.open-cluster-management.io
 subjects:
   - name: {{ .name }}-gitops-policy-argocd
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
+  - name: {{ .name }}-gitops-prereqs-argocd
     kind: Policy
     apiGroup: policy.open-cluster-management.io
 ---
