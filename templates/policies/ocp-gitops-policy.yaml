@@ -63,76 +63,6 @@ spec:
                   namespace: {{ $.Values.global.vpArgoNamespace }}
                   labels:
                     config.openshift.io/inject-trusted-cabundle: 'true'
-            {{- if and $.Values.global.gitOpsSubNamespace (ne $.Values.global.gitOpsSubNamespace "openshift-operators") }}
-            - complianceType: mustonlyhave
-              objectDefinition:
-                apiVersion: v1
-                kind: Namespace
-                metadata:
-                  name: {{ $.Values.global.gitOpsSubNamespace }}
-            - complianceType: mustonlyhave
-              objectDefinition:
-                apiVersion: operators.coreos.com/v1
-                kind: OperatorGroup
-                metadata:
-                  name: {{ $.Values.global.gitOpsSubNamespace }}-operator-group
-                  namespace: {{ $.Values.global.gitOpsSubNamespace }}
-                spec:
-            {{- end }}
----
-apiVersion: policy.open-cluster-management.io/v1
-kind: PlacementBinding
-metadata:
-  name: {{ .name }}-gitops-placement-binding
-  annotations:
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-placementRef:
-  name: {{ .name }}-gitops-placement
-  kind: Placement
-  apiGroup: cluster.open-cluster-management.io
-subjects:
-  - name: {{ .name }}-gitops-policy
-    kind: Policy
-    apiGroup: policy.open-cluster-management.io
----
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: Placement
-metadata:
-  name: {{ .name }}-gitops-placement
-  annotations:
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-spec:
-{{- include "acm.app.clusterSelector" (dict
-  "clusterSelector" .clusterSelector
-  "group" $group
-  ) | nindent 2 }}
----
-apiVersion: policy.open-cluster-management.io/v1
-kind: Policy
-metadata:
-  name: {{ .name }}-gitops-prereqs-argocd
-  annotations:
-    policy.open-cluster-management.io/standards: NIST-CSF
-    policy.open-cluster-management.io/categories: PR.DS Data Security
-    policy.open-cluster-management.io/controls: PR.DS-1 Data-at-rest
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/compare-options: IgnoreExtraneous
-spec:
-  remediationAction: enforce
-  disabled: false
-  policy-templates:
-    - objectDefinition:
-        apiVersion: policy.open-cluster-management.io/v1
-        kind: ConfigurationPolicy
-        metadata:
-          name: {{ .name }}-gitops-prereqs-argocd
-        spec:
-          remediationAction: enforce
-          severity: medium
-          namespaceSelector:
-            include:
-              - default
-          object-templates:
             - complianceType: musthave
               objectDefinition:
                 apiVersion: rbac.authorization.k8s.io/v1
@@ -178,6 +108,49 @@ spec:
                     server: '*'
                   sourceRepos:
                   - '*'
+            {{- if and $.Values.global.gitOpsSubNamespace (ne $.Values.global.gitOpsSubNamespace "openshift-operators") }}
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: {{ $.Values.global.gitOpsSubNamespace }}
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: operators.coreos.com/v1
+                kind: OperatorGroup
+                metadata:
+                  name: {{ $.Values.global.gitOpsSubNamespace }}-operator-group
+                  namespace: {{ $.Values.global.gitOpsSubNamespace }}
+                spec:
+            {{- end }}
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: {{ .name }}-gitops-placement-binding
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+placementRef:
+  name: {{ .name }}-gitops-placement
+  kind: Placement
+  apiGroup: cluster.open-cluster-management.io
+subjects:
+  - name: {{ .name }}-gitops-policy
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: {{ .name }}-gitops-placement
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+{{- include "acm.app.clusterSelector" (dict
+  "clusterSelector" .clusterSelector
+  "group" $group
+  ) | nindent 2 }}
 ---
 # This policy depends on openshift-gitops-policy and the reason is that we need to be
 # certain that the trusted-ca-bundle exists before spawning the clusterwide argocd instance
@@ -197,7 +170,7 @@ spec:
   remediationAction: enforce
   disabled: false
   dependencies:
-    - name: {{ .name }}-gitops-prereqs-argocd
+    - name: {{ .name }}-gitops-policy
       compliance: Compliant
       kind: Policy
       apiVersion: policy.open-cluster-management.io/v1
@@ -460,9 +433,6 @@ placementRef:
   apiGroup: cluster.open-cluster-management.io
 subjects:
   - name: {{ .name }}-gitops-policy-argocd
-    kind: Policy
-    apiGroup: policy.open-cluster-management.io
-  - name: {{ .name }}-gitops-prereqs-argocd
     kind: Policy
     apiGroup: policy.open-cluster-management.io
 ---
