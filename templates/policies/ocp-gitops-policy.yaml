@@ -196,7 +196,7 @@ spec:
                   namespace: {{ $.Values.global.vpArgoNamespace }}
                 spec:
                   image: quay.io/rhn_support_mbaldess/argocd
-                  version: master-20206-04-30
+                  version: master-20206-04-30-selfheal
                   applicationSet:
                     resources:
                       limits:
