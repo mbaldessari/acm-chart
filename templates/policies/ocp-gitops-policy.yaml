@@ -196,7 +196,7 @@ spec:
                   namespace: {{ $.Values.global.vpArgoNamespace }}
                 spec:
                   image: quay.io/rhn_support_mbaldess/argocd
-                  version: master_21150_review1
+                  version: master_21150_review1_fixed
                   applicationSet:
                     resources:
                       limits:
