@@ -59,6 +59,7 @@ spec:
                   namespace: {{ $.Values.global.vpArgoNamespace }}
                   annotations:
                     notice.argocd.argoproj.io/content: "App of apps, fuckers"
+                    notice.argocd.argoproj.io/severity: critical
                   finalizers:
                   - resources-finalizer.argocd.argoproj.io/foreground
                 spec:
