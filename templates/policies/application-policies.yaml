@@ -1,6 +1,10 @@
 # TODO: Also create a GitOpsCluster.apps.open-cluster-management.io
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
+{{- $argoDestNamespace := (printf "%s-%s" $.Values.global.pattern .name) -}}
+{{- if $.Values.clusterGroup.singleArgoCD }}
+{{- $argoDestNamespace = $.Values.global.vpArgoNamespace -}}
+{{- end }}
 {{- if ($.Values.global.deletePattern | eq "DeleteSpoke" ) }}
 {{- else }}
 apiVersion: policy.open-cluster-management.io/v1
@@ -148,7 +152,7 @@ spec:
                   {{- end }}{{/* if $.Values.global.multiSourceSupport */}}
                   destination:
                     server: https://kubernetes.default.svc
-                    namespace: {{ $.Values.global.pattern }}-{{ .name }}
+                    namespace: {{ $argoDestNamespace }}
                   syncPolicy:
                     automated:
                     {{- if ($.Values.global.deletePattern | ne "none" ) }}
