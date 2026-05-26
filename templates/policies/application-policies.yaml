@@ -156,6 +156,9 @@ spec:
                   destination:
                     server: https://kubernetes.default.svc
                     namespace: {{ $argoDestNamespace }}
+                  info:
+                    - name: "VP"
+                      value: "https://validatedpatterns.io APP OF APPS"
                   syncPolicy:
                     automated:
                     {{- if ($.Values.global.deletePattern | ne "none" ) }}
