@@ -57,6 +57,8 @@ spec:
                 metadata:
                   name: {{ $.Values.global.pattern }}-{{ .name }}
                   namespace: {{ $.Values.global.vpArgoNamespace }}
+                  annotations:
+                    notice.argocd.argoproj.io/content: "App of apps, fuckers"
                   finalizers:
                   - resources-finalizer.argocd.argoproj.io/foreground
                 spec:
