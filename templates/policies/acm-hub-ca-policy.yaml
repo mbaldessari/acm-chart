@@ -1,8 +1,6 @@
 # This pushes out the HUB's Certificate Authorities on to the imported clusters
 {{- if eq (include "acm.ishubcluster" .) "true" }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
-{{- if $.Values.clusterGroup.singleArgoCD }}
-{{- else }}
 {{- $group := . }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
@@ -208,7 +206,6 @@ spec:
   "group" $group
   ) | nindent 2 }}
 
-{{- end }}{{/* if $.Values.clusterGroup.singleArgoCD */}}
 {{- end }}{{/* if (eq ((($.Values.global).secretStore).backend) "vault") */}}
 {{- end }}{{/* range .Values.clusterGroup.managedClusterGroups */}}
 {{- end }}{{/* ishubcluster */}}
