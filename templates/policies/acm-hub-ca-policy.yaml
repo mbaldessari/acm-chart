@@ -2,6 +2,8 @@
 {{- if eq (include "acm.ishubcluster" .) "true" }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
+{{- if $.Values.clusterGroup.singleArgoCD }}
+{{- else }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
@@ -66,6 +68,7 @@ spec:
   "group" $group
   ) | nindent 2 }}
 {{- if (eq ((($.Values.global).secretStore).backend) "vault") }}
+{{- end }}{{/* if $.Values.clusterGroup.singleArgoCD */}}
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
