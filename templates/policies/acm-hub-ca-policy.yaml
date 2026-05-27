@@ -67,8 +67,8 @@ spec:
   "clusterSelector" .clusterSelector
   "group" $group
   ) | nindent 2 }}
-{{- if (eq ((($.Values.global).secretStore).backend) "vault") }}
 {{- end }}{{/* if $.Values.clusterGroup.singleArgoCD */}}
+{{- if (eq ((($.Values.global).secretStore).backend) "vault") }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
