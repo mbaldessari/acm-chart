@@ -146,8 +146,8 @@ tests:
             name: openshift-gitops-argocd-server
             namespace: openshift-gitops
 
-  # Tests for clusterGroupGitRepoUrl and clusterGroupChartGitRevision
-  - it: Should use chart clustergroup when clusterGroupGitRepoUrl is not set
+  # Tests for super chart source configuration
+  - it: Should use chart clustergroup-super when no git overrides are set
     values:
       - ./clusterselector_values.yaml
     set:
@@ -161,7 +161,7 @@ tests:
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].chart
-          value: clustergroup
+          value: clustergroup-super
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -180,7 +180,7 @@ tests:
         isNull:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
 
-  - it: Should use path when clusterGroupGitRepoUrl is set
+  - it: Should use path when superChartGitRepoUrl is set
     values:
       - ./clusterselector_values.yaml
     set:
@@ -190,21 +190,21 @@ tests:
         multiSourceTargetRevision: "0.1.0"
       main:
         multiSourceConfig:
-          clusterGroupGitRepoUrl: "https://github.com/example/clustergroup-chart"
-          clusterGroupChartGitRevision: "feature-branch"
+          superChartGitRepoUrl: "https://github.com/example/acm-chart"
+          superChartGitRevision: "feature-branch"
     asserts:
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
-          value: "."
+          value: "charts/clustergroup-super"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://github.com/example/clustergroup-chart"
+          value: "https://github.com/example/acm-chart"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -217,7 +217,7 @@ tests:
         isNull:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].chart
 
-  - it: Should use clusterGroupGitRepoUrl with fallback to multiSourceTargetRevision when only clusterGroupGitRepoUrl is set
+  - it: Should pass clusterGroupSource config in values block
     values:
       - ./clusterselector_values.yaml
     set:
@@ -228,25 +228,26 @@ tests:
       main:
         multiSourceConfig:
           clusterGroupGitRepoUrl: "https://github.com/example/clustergroup-chart"
+          clusterGroupChartGitRevision: "cg-branch"
     asserts:
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
-        equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
-          value: "."
+        matchRegex:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.values
+          pattern: "useGitRepo: true"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
-        equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://github.com/example/clustergroup-chart"
+        matchRegex:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.values
+          pattern: 'gitRepoUrl: "https://github.com/example/clustergroup-chart"'
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
-        equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].targetRevision
-          value: "0.1.0"
+        matchRegex:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.values
+          pattern: 'gitRevision: "cg-branch"'
 
   - it: should render a spoke app of apps with the correct helm parameters (no deletePattern set)
     values:
@@ -256,10 +257,6 @@ tests:
         multiSourceSupport: true
         multiSourceRepoUrl: "https://charts.example.com"
         multiSourceTargetRevision: "0.1.0"
-      main:
-        multiSourceConfig:
-          clusterGroupGitRepoUrl: "https://github.com/example/clustergroup-chart"
-          clusterGroupChartGitRevision: "feature-branch"
     asserts:
       - hasDocuments:
           count: 3
@@ -268,7 +265,7 @@ tests:
           value: group-one-clustergroup-policy
         lengthEqual:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.parameters
-          count: 22 # 19 (in the helper) +3 (1 override, and 1 clusterGroup.name)
+          count: 20 # 19 (in the helper) + 1 (clusterGroup.name); helmOverrides now in values block
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -282,6 +279,28 @@ tests:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.parameters[16].value
           value: null
 
+  - it: should pass helmOverrides in the values block
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: "https://charts.example.com"
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        matchRegex:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.values
+          pattern: "helmOverrides:"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        matchRegex:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.values
+          pattern: "name: clusterGroup.isHubCluster"
+
   - it: should render a spoke app of apps with the correct helm parameters (if deletePattern set to DeleteSpokeChildApps)
     values:
       - ./clusterselector_values.yaml
@@ -291,10 +310,6 @@ tests:
         multiSourceRepoUrl: "https://charts.example.com"
         multiSourceTargetRevision: "0.1.0"
         deletePattern: DeleteSpokeChildApps
-      main:
-        multiSourceConfig:
-          clusterGroupGitRepoUrl: "https://github.com/example/clustergroup-chart"
-          clusterGroupChartGitRevision: "feature-branch"
     asserts:
       - hasDocuments:
           count: 3
@@ -303,7 +318,7 @@ tests:
           value: group-one-clustergroup-policy
         lengthEqual:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.parameters
-          count: 22 # 19 (in the helper) +3 (1 override, and 1 clusterGroup.name)
+          count: 20 # 19 (in the helper) + 1 (clusterGroup.name); helmOverrides now in values block
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -326,10 +341,6 @@ tests:
         multiSourceRepoUrl: "https://charts.example.com"
         multiSourceTargetRevision: "0.1.0"
         deletePattern: DeleteSpoke
-      main:
-        multiSourceConfig:
-          clusterGroupGitRepoUrl: "https://github.com/example/clustergroup-chart"
-          clusterGroupChartGitRevision: "feature-branch"
     asserts:
       - hasDocuments:
           count: 0

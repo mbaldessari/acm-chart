@@ -1,0 +1,4 @@
+apiVersion: v2
+description: Bootstrap chart that creates a clustergroup ArgoCD Application with tpl-resolved sharedValueFiles on the spoke.
+name: clustergroup-super
+version: 0.1.0
