@@ -1,0 +1,192 @@
+suite: Test clustergroup-super chart
+templates:
+  - templates/clustergroup-application.yaml
+release:
+  name: release-test
+tests:
+
+  - it: Should create an ArgoCD Application for the clustergroup chart
+    values:
+      - ./test_values.yaml
+    asserts:
+      - isKind:
+          of: Application
+      - equal:
+          path: metadata.name
+          value: multicloud-gitops-group-one
+      - equal:
+          path: metadata.namespace
+          value: multicloud-gitops-group-one
+
+  - it: Should use vpArgoNamespace when singleArgoCD is true
+    values:
+      - ./test_values.yaml
+    set:
+      clusterGroup.singleArgoCD: true
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: openshift-gitops
+
+  - it: Should point to clustergroup helm chart by default
+    values:
+      - ./test_values.yaml
+    asserts:
+      - equal:
+          path: spec.sources[1].chart
+          value: clustergroup
+      - equal:
+          path: spec.sources[1].repoURL
+          value: https://charts.example.com
+      - equal:
+          path: spec.sources[1].targetRevision
+          value: "0.1.0"
+      - isNull:
+          path: spec.sources[1].path
+
+  - it: Should use git repo path when clusterGroupSource.useGitRepo is true
+    values:
+      - ./test_values.yaml
+    set:
+      clusterGroupSource:
+        useGitRepo: true
+        gitRepoUrl: "https://github.com/example/clustergroup-chart"
+        gitRevision: "feature-branch"
+    asserts:
+      - equal:
+          path: spec.sources[1].path
+          value: "."
+      - equal:
+          path: spec.sources[1].repoURL
+          value: "https://github.com/example/clustergroup-chart"
+      - equal:
+          path: spec.sources[1].targetRevision
+          value: "feature-branch"
+      - isNull:
+          path: spec.sources[1].chart
+
+  - it: Should include standard value files with platform and version
+    values:
+      - ./test_values.yaml
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-global.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-group-one.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-AWS.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-AWS-4.14.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-AWS-group-one.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-4.14-group-one.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-spoke1.yaml"
+
+  - it: Should resolve sharedValueFiles via tpl with spoke values
+    values:
+      - ./test_values.yaml
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/overrides/values-AWS.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/overrides/values-4.14-group-one.yaml"
+
+  - it: Should produce empty sharedValueFiles when none are defined
+    values:
+      - ./test_values.yaml
+    set:
+      clusterGroup.sharedValueFiles: []
+    asserts:
+      - notContains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/overrides/values-AWS.yaml"
+
+  - it: Should pass through helmOverrides in parameters
+    values:
+      - ./test_values.yaml
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: clusterGroup.isHubCluster
+            value: "false"
+
+  - it: Should pass through global values as helm parameters
+    values:
+      - ./test_values.yaml
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.clusterPlatform
+            value: "AWS"
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.clusterVersion
+            value: "4.14"
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: clusterGroup.name
+            value: group-one
+
+  - it: Should set prune false when deletePattern is none
+    values:
+      - ./test_values.yaml
+    asserts:
+      - equal:
+          path: spec.syncPolicy.automated.prune
+          value: false
+
+  - it: Should set prune true when deletePattern is not none
+    values:
+      - ./test_values.yaml
+    set:
+      global.deletePattern: "DeleteChildApps"
+    asserts:
+      - equal:
+          path: spec.syncPolicy.automated.prune
+          value: true
+
+  - it: Should pass innerApp.extraValueFiles through
+    values:
+      - ./test_values.yaml
+    set:
+      innerApp:
+        helmOverrides: []
+        fileParameters: []
+        extraValueFiles:
+          - "$patternref/extra-values.yaml"
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/extra-values.yaml"
+
+  - it: Should pass fileParameters through
+    values:
+      - ./test_values.yaml
+    set:
+      innerApp:
+        helmOverrides: []
+        fileParameters:
+          - name: secret.file
+            path: /tmp/secret
+        extraValueFiles: []
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.fileParameters
+          content:
+            name: secret.file
+            path: /tmp/secret

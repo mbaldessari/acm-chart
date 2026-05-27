@@ -55,11 +55,12 @@ spec:
                 apiVersion: argoproj.io/v1alpha1
                 kind: Application
                 metadata:
+                  {{- if $.Values.global.multiSourceSupport }}
+                  name: {{ $.Values.global.pattern }}-{{ .name }}-bootstrap
+                  {{- else }}
                   name: {{ $.Values.global.pattern }}-{{ .name }}
+                  {{- end }}
                   namespace: {{ $.Values.global.vpArgoNamespace }}
-                  annotations:
-                    notice.argocd.argoproj.io/content: "App of apps, fuckers"
-                    notice.argocd.argoproj.io/severity: critical
                   finalizers:
                   - resources-finalizer.argocd.argoproj.io/foreground
                 spec:
@@ -69,7 +70,7 @@ spec:
                     - repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}
                       targetRevision: {{ coalesce .targetRevision $.Values.global.targetRevision }}
                       ref: patternref
-                      {{/* If we're using the clustergroup chart from a git repo let's use those */}}
+                      {{/* Resolve clustergroup chart source config to pass to super chart */}}
                       {{- $clusterGroupGitRepoUrl := "" }}
                       {{- if and $.Values.main $.Values.main.multiSourceConfig }}
                         {{- $clusterGroupGitRepoUrl = $.Values.main.multiSourceConfig.clusterGroupGitRepoUrl }}
@@ -78,12 +79,21 @@ spec:
                       {{- if and $.Values.main $.Values.main.multiSourceConfig }}
                         {{- $clusterGroupChartGitRevision = $.Values.main.multiSourceConfig.clusterGroupChartGitRevision }}
                       {{- end }}
-                    - repoURL: {{ coalesce $clusterGroupGitRepoUrl $.Values.global.multiSourceRepoUrl }}
-                      targetRevision: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision }}
-                      {{- if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "clusterGroupGitRepoUrl") }}
-                      path: "."
+                      {{/* Resolve super chart source config */}}
+                      {{- $superChartGitRepoUrl := "" }}
+                      {{- if and $.Values.main $.Values.main.multiSourceConfig }}
+                        {{- $superChartGitRepoUrl = $.Values.main.multiSourceConfig.superChartGitRepoUrl }}
+                      {{- end }}
+                      {{- $superChartGitRevision := "" }}
+                      {{- if and $.Values.main $.Values.main.multiSourceConfig }}
+                        {{- $superChartGitRevision = $.Values.main.multiSourceConfig.superChartGitRevision }}
+                      {{- end }}
+                    - repoURL: {{ coalesce $superChartGitRepoUrl $.Values.global.multiSourceRepoUrl }}
+                      targetRevision: {{ coalesce $superChartGitRevision $.Values.global.multiSourceTargetRevision }}
+                      {{- if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "superChartGitRepoUrl") }}
+                      path: "charts/clustergroup-super"
                       {{- else }}
-                      chart: clustergroup
+                      chart: clustergroup-super
                       {{- end }}
                       helm:
                         ignoreMissingValueFiles: true
@@ -91,6 +101,33 @@ spec:
                           extraParametersNested:
                           {{- range $k, $v := $.Values.extraParametersNested }}
                             {{ $k }}: {{ printf "%s" $v | quote }}
+                          {{- end }}
+                          clusterGroupSource:
+                            useGitRepo: {{ if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "clusterGroupGitRepoUrl") }}true{{ else }}false{{ end }}
+                            gitRepoUrl: {{ $clusterGroupGitRepoUrl | default "" | quote }}
+                            gitRevision: {{ $clusterGroupChartGitRevision | default "" | quote }}
+                          {{- if or .helmOverrides .fileParameters .extraValueFiles }}
+                          innerApp:
+                          {{- if .helmOverrides }}
+                            helmOverrides:
+                            {{- range .helmOverrides }}
+                            - name: {{ .name }}
+                              value: {{ .value | quote }}
+                            {{- end }}
+                          {{- end }}
+                          {{- if .fileParameters }}
+                            fileParameters:
+                            {{- range .fileParameters }}
+                            - name: {{ .name }}
+                              path: {{ .path }}
+                            {{- end }}
+                          {{- end }}
+                          {{- if .extraValueFiles }}
+                            extraValueFiles:
+                            {{- range .extraValueFiles }}
+                            - {{ . | quote }}
+                            {{- end }}
+                          {{- end }}
                           {{- end }}
                         valueFiles:
                         {{- include "acm.app.policies.multisourcevaluefiles" . | nindent 24 }}
@@ -105,17 +142,6 @@ spec:
                         - name: {{ $k }}
                           value: {{ printf "%s" $v | quote }}
                         {{- end }}
-                       {{- range .helmOverrides }}
-                        - name: {{ .name }}
-                          value: {{ .value | quote }}
-                       {{- end }}
-                       {{- if .fileParameters }}
-                        fileParameters:
-                        {{- range .fileParameters }}
-                        - name: {{ .name }}
-                          path: {{ .path }}
-                        {{- end }}
-                       {{- end }}
                   {{- else }}
                   source:
                     repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}
@@ -158,7 +184,7 @@ spec:
                     namespace: {{ $argoDestNamespace }}
                   info:
                     - name: "VP"
-                      value: "https://validatedpatterns.io APP OF APPS"
+                      value: "https://validatedpatterns.io BOOTSTRAP"
                   syncPolicy:
                     automated:
                     {{- if ($.Values.global.deletePattern | ne "none" ) }}

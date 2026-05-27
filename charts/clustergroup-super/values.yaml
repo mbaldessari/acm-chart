@@ -1,0 +1,43 @@
+global:
+  pattern: ""
+  repoURL: ""
+  originURL: ""
+  targetRevision: main
+  namespace: ""
+  vpArgoNamespace: openshift-gitops
+  hubClusterDomain: ""
+  localClusterDomain: ""
+  clusterDomain: ""
+  clusterVersion: ""
+  localClusterName: ""
+  clusterPlatform: ""
+  multiSourceSupport: true
+  multiSourceRepoUrl: ""
+  multiSourceTargetRevision: ""
+  privateRepo: false
+  experimentalCapabilities: ""
+  deletePattern: "none"
+  gitOpsSubNamespace: ""
+  extraValueFiles: []
+  options:
+    applicationRetryLimit: 20
+
+clusterGroup:
+  name: ""
+  sharedValueFiles: []
+  singleArgoCD: false
+
+# Source configuration for the inner clustergroup chart.
+# Set by the ACM chart to tell the super chart where to find the clustergroup chart.
+clusterGroupSource:
+  useGitRepo: false
+  gitRepoUrl: ""
+  gitRevision: ""
+
+# Per-managedClusterGroup overrides passed through to the inner Application.
+innerApp:
+  helmOverrides: []
+  fileParameters: []
+  extraValueFiles: []
+
+extraParametersNested: {}

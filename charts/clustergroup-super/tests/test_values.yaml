@@ -1,0 +1,44 @@
+global:
+  pattern: multicloud-gitops
+  repoURL: https://github.com/example/multicloud-gitops
+  originURL: https://github.com/example/multicloud-gitops
+  targetRevision: main
+  namespace: openshift-gitops
+  vpArgoNamespace: openshift-gitops
+  hubClusterDomain: apps.hub.example.com
+  localClusterDomain: apps.spoke.example.com
+  clusterDomain: spoke.example.com
+  clusterVersion: "4.14"
+  localClusterName: spoke1
+  clusterPlatform: AWS
+  multiSourceSupport: true
+  multiSourceRepoUrl: https://charts.example.com
+  multiSourceTargetRevision: "0.1.0"
+  privateRepo: false
+  experimentalCapabilities: ""
+  deletePattern: "none"
+  gitOpsSubNamespace: ""
+  extraValueFiles: []
+  options:
+    applicationRetryLimit: 20
+
+clusterGroup:
+  name: group-one
+  sharedValueFiles:
+    - '/overrides/values-{{ $.Values.global.clusterPlatform }}.yaml'
+    - '/overrides/values-{{ $.Values.global.clusterVersion }}-{{ $.Values.clusterGroup.name }}.yaml'
+  singleArgoCD: false
+
+clusterGroupSource:
+  useGitRepo: false
+  gitRepoUrl: ""
+  gitRevision: ""
+
+innerApp:
+  helmOverrides:
+    - name: clusterGroup.isHubCluster
+      value: "false"
+  fileParameters: []
+  extraValueFiles: []
+
+extraParametersNested: {}

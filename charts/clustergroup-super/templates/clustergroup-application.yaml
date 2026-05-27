@@ -1,0 +1,75 @@
+{{- $argoNamespace := include "super.argocdnamespace" . | trim }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $.Values.global.pattern }}-{{ $.Values.clusterGroup.name }}
+  namespace: {{ $argoNamespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  sources:
+    - repoURL: {{ $.Values.global.repoURL }}
+      targetRevision: {{ $.Values.global.targetRevision }}
+      ref: patternref
+    - repoURL: {{ coalesce $.Values.clusterGroupSource.gitRepoUrl $.Values.global.multiSourceRepoUrl }}
+      targetRevision: {{ coalesce $.Values.clusterGroupSource.gitRevision $.Values.global.multiSourceTargetRevision }}
+      {{- if $.Values.clusterGroupSource.useGitRepo }}
+      path: "."
+      {{- else }}
+      chart: clustergroup
+      {{- end }}
+      helm:
+        ignoreMissingValueFiles: true
+        values: |
+          extraParametersNested:
+          {{- range $k, $v := $.Values.extraParametersNested }}
+            {{ $k }}: {{ printf "%s" $v | quote }}
+          {{- end }}
+        valueFiles:
+        {{- include "super.globalvalues.prefixedvaluefiles" $ | nindent 8 }}
+        {{- include "super.sharedvaluefiles" $ | nindent 8 }}
+        {{- range $valueFile := $.Values.innerApp.extraValueFiles }}
+        - {{ $valueFile | quote }}
+        {{- end }}
+        parameters:
+        {{- include "super.globalvalues.helmparameters" $ | nindent 8 }}
+        - name: clusterGroup.name
+          value: {{ $.Values.clusterGroup.name }}
+        {{- range $k, $v := $.Values.extraParametersNested }}
+        - name: {{ $k }}
+          value: {{ printf "%s" $v | quote }}
+        {{- end }}
+        {{- range $.Values.innerApp.helmOverrides }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        {{- if $.Values.innerApp.fileParameters }}
+        fileParameters:
+        {{- range $.Values.innerApp.fileParameters }}
+        - name: {{ .name }}
+          path: {{ .path }}
+        {{- end }}
+        {{- end }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ $argoNamespace }}
+  syncPolicy:
+    automated:
+    {{- if ($.Values.global.deletePattern | ne "none" ) }}
+      prune: true
+    {{- else }}
+      prune: false
+    {{- end }}
+      selfHeal: true
+    retry:
+      limit: {{ default 20 $.Values.global.options.applicationRetryLimit }}
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas
+  - group: route.openshift.io
+    kind: Route
+    jsonPointers:
+    - /status
