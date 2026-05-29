@@ -7,7 +7,8 @@ metadata:
   name: {{ $.Values.global.vpArgoNamespace }}-bandini-{{ $group.name }}
   namespace: {{ $.Values.global.vpArgoNamespace }}
 data:
-  hc: {{ toYaml $hubArgo | indent 4 }}
+  hc: |
+{{ toYaml $hubArgo | indent 4 }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
