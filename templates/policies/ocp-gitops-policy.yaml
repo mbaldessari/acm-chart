@@ -107,6 +107,7 @@ spec:
   "group" $group
   ) | nindent 2 }}
 ---
+{{- $hubArgo := (lookup "argoproj.io/v1beta1" "ArgoCD" $.Values.global.vpArgoNamespace $.Values.global.vpArgoNamespace) }}
 # This policy depends on openshift-gitops-policy and the reason is that we need to be
 # certain that the trusted-ca-bundle exists before spawning the clusterwide argocd instance
 # because the initcontainer references the trusted-ca-bundle and if it starts without the
@@ -265,12 +266,16 @@ spec:
                       kinds:
                       - TaskRun
                       - PipelineRun
-                  # Custom Subscription healthcheck to handle manual approval scenarios
+                  {{- if and $hubArgo $hubArgo.spec $hubArgo.spec.resourceHealthChecks }}
+                  resourceHealthChecks:
+{{ toYaml $hubArgo.spec.resourceHealthChecks | indent 20 }}
+                  {{- else }}
                   resourceHealthChecks:
                     - group: operators.coreos.com
                       kind: Subscription
                       check: |
 {{- include "acm.subscription.healthcheck.lua" . | nindent 24 }}
+                  {{- end }}
                   server:
                     autoscale:
                       enabled: false
