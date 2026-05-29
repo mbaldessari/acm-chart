@@ -35,7 +35,7 @@ spec:
                 data:
                   foo: bar
                   hc: |
-                    {{ `{{ lookup "argoproj.io/v1beta1" "ArgoCD" "vp-gitops" "vp-gitops" | autoindent }}` }}
+                    {{ `{{ lookup "argoproj.io/v1beta1" "ArgoCD" "vp-gitops" "vp-gitops" | toyaml | autoindent }}` }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
