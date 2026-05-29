@@ -4,7 +4,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ $.Values.global.vpArgoNamespace }}-bandini-{{ $group }}
+  name: {{ $.Values.global.vpArgoNamespace }}-bandini-{{ $group.name }}
   namespace: {{ $.Values.global.vpArgoNamespace }}
 data:
   hc: {{ toYaml $hubArgo | indent 4 }}
