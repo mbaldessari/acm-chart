@@ -34,8 +34,7 @@ spec:
                   namespace: {{ $.Values.global.vpArgoNamespace }}
                 data:
                   foo: bar
-                  hc: |
-                    {{ `{{ lookup "argoproj.io/v1beta1" "ArgoCD" "vp-gitops" "vp-gitops" | toyaml | autoindent }}` }}
+                  hc: {{ `{{ lookup "argoproj.io/v1beta1" "ArgoCD" "vp-gitops" "vp-gitops" | b64enc }}` }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
