@@ -277,16 +277,8 @@ spec:
                       kinds:
                       - TaskRun
                       - PipelineRun
-                  {{- if and $hubArgo $hubArgo.spec $hubArgo.spec.resourceHealthChecks }}
-                  resourceHealthChecks:
-{{ toYaml $hubArgo.spec.resourceHealthChecks | indent 20 }}
-                  {{- else }}
-                  resourceHealthChecks:
-                    - group: operators.coreos.com
-                      kind: Subscription
-                      check: |
-{{- include "acm.subscription.healthcheck.lua" . | nindent 24 }}
-                  {{- end }}
+                  resourceHealthChecks: |
+                    {{ `{{hub (lookup "argoproj.io/v1beta1" "ArgoCD" "vp-gitops" "vp-gitops").spec.resourceHealthChecks | toYaml | autoindent hub}}` }}
                   server:
                     autoscale:
                       enabled: false
