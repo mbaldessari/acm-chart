@@ -1,5 +1,14 @@
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
+{{- $hubArgo := (lookup "argoproj.io/v1beta1" "ArgoCD" $.Values.global.vpArgoNamespace $.Values.global.vpArgoNamespace) }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ $.Values.global.vpArgoNamespace }}-bandini-{{ $group }}
+  namespace: {{ $.Values.global.vpArgoNamespace }}
+data:
+  hc: {{ toYaml $hubArgo.spec.resourceHealthChecks | indent 4 }}
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
