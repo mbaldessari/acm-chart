@@ -1,13 +1,13 @@
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
-{{- $myargo := `{{ (lookup "argoproj.io/v1beta1" "ArgoCD" $.Values.global.vpArgoNamespace $.Values.global.vpArgoNamespace) }}` }}
+{{- $myargo := (lookup "argoproj.io/v1beta1" "ArgoCD" $.Values.global.vpArgoNamespace $.Values.global.vpArgoNamespace) }}
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: {{ $.Values.global.vpArgoNamespace }}-bandini-{{ $group.name }}
   namespace: {{ $.Values.global.vpArgoNamespace }}
 data:
-  hc: |
+  hc: |-
 {{ toYaml $myargo | indent 4 }}
 ---
 apiVersion: policy.open-cluster-management.io/v1
