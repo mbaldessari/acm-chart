@@ -50,8 +50,6 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 {{- end }} {{- /*acm.app.policies.multisourcevaluefiles */}}
 
 {{- define "acm.app.policies.hubmultisourcevaluefiles" -}}
-- "$patternref/values-global.yaml"
-- "$patternref/values-{{ $group.name }}.yaml"
 - '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
 - '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}.yaml'
 - '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ .name }}.yaml'
