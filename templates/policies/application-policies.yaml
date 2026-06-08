@@ -55,7 +55,7 @@ spec:
                 apiVersion: argoproj.io/v1alpha1
                 kind: Application
                 metadata:
-                  name: {{ $.Values.global.pattern }}-{{ .name }}
+                  name: {{ $.Values.global.pattern }}-{{ .name }}-wrapper
                   namespace: {{ $.Values.global.vpArgoNamespace }}
                   annotations:
                     notice.argocd.argoproj.io/severity: info
