@@ -82,11 +82,7 @@ spec:
                       {{- end }}
                     - repoURL: https://github.com/mbaldessari/wrapper-app-of-apps-chart
                       targetRevision: main
-                      {{- if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "clusterGroupGitRepoUrl") }}
                       path: "."
-                      {{- else }}
-                      chart: clustergroup
-                      {{- end }}
                       helm:
                         ignoreMissingValueFiles: true
                         values: |
