@@ -68,8 +68,8 @@ spec:
                   project: default
                   {{- if $.Values.global.multiSourceSupport }}
                   sources:
-                    - repoURL: https://github.com/mbaldessari/wrapper-app-of-apps-chart
-                      targetRevision: main
+                    - repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}
+                      targetRevision: {{ coalesce .targetRevision $.Values.global.targetRevision }}
                       ref: patternref
                       {{/* If we're using the clustergroup chart from a git repo let's use those */}}
                       {{- $clusterGroupGitRepoUrl := "" }}
@@ -80,8 +80,8 @@ spec:
                       {{- if and $.Values.main $.Values.main.multiSourceConfig }}
                         {{- $clusterGroupChartGitRevision = $.Values.main.multiSourceConfig.clusterGroupChartGitRevision }}
                       {{- end }}
-                    - repoURL: {{ coalesce $clusterGroupGitRepoUrl $.Values.global.multiSourceRepoUrl }}
-                      targetRevision: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision }}
+                    - repoURL: https://github.com/mbaldessari/wrapper-app-of-apps-chart
+                      targetRevision: main
                       {{- if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "clusterGroupGitRepoUrl") }}
                       path: "."
                       {{- else }}
