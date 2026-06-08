@@ -68,8 +68,8 @@ spec:
                   project: default
                   {{- if $.Values.global.multiSourceSupport }}
                   sources:
-                    - repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}
-                      targetRevision: {{ coalesce .targetRevision $.Values.global.targetRevision }}
+                    - repoURL: https://github.com/mbaldessari/wrapper-app-of-apps-chart
+                      targetRevision: main
                       ref: patternref
                       {{/* If we're using the clustergroup chart from a git repo let's use those */}}
                       {{- $clusterGroupGitRepoUrl := "" }}
