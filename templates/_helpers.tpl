@@ -14,15 +14,19 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 {{- end }} {{- /*acm.app.policies.valuefiles */}}
 
 {{- define "acm.app.policies.multisourcevaluefiles" -}}
-- "$patternref/values-global.yaml"
-- "$patternref/values-{{ .name }}.yaml"
-- '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
-- '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}.yaml'
-- '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ .name }}.yaml'
+{{- $vd := "" -}}
+{{- if and (hasKey .Values.global "variantDir") .Values.global.variantDir -}}
+{{- $vd = printf "/%s" .Values.global.variantDir -}}
+{{- end -}}
+- "$patternref{{ $vd }}/values-global.yaml"
+- "$patternref{{ $vd }}/values-{{ .name }}.yaml"
+- '$patternref{{ $vd }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
+- '$patternref{{ $vd }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}.yaml'
+- '$patternref{{ $vd }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ .name }}.yaml'
 # We cannot use $.Values.global.clusterVersion because that gets resolved to the
 # hub's cluster version, whereas we want to include the spoke cluster version
-- '$patternref/values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}-{{ .name }}.yaml'
-- '$patternref/values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml'
+- '$patternref{{ $vd }}/values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}-{{ .name }}.yaml'
+- '$patternref{{ $vd }}/values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml'
 {{- end }} {{- /*acm.app.policies.multisourcevaluefiles */}}
 
 {{- define "acm.app.policies.helmparameters" -}}

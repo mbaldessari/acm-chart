@@ -95,7 +95,7 @@ spec:
                             {{ $k }}: {{ printf "%s" $v | quote }}
                           {{- end }}
                         valueFiles:
-                        {{- include "acm.app.policies.multisourcevaluefiles" . | nindent 24 }}
+                        {{- include "acm.app.policies.multisourcevaluefiles" (dict "name" .name "Values" $.Values) | nindent 24 }}
                         {{- range $valueFile := .extraValueFiles }}
                         - {{ $valueFile | quote }}
                         {{- end }}

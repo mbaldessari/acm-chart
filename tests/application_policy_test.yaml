@@ -333,3 +333,71 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: Should include variantDir in multisource valueFiles when set
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: "https://charts.example.com"
+        multiSourceTargetRevision: "0.1.0"
+        variantDir: myvariant
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/myvariant/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/myvariant/values-group-one.yaml"
+
+  - it: Should not include variantDir in multisource valueFiles when not set
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: "https://charts.example.com"
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-group-one.yaml"
+
+  - it: Should not include variantDir in multisource valueFiles when set to empty string
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: "https://charts.example.com"
+        multiSourceTargetRevision: "0.1.0"
+        variantDir: ""
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-group-one.yaml"
