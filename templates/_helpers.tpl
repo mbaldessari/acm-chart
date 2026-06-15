@@ -75,6 +75,8 @@ if this chart gets DeleteSpokeChildApps, it will set deletePattern to DeleteChil
   value: {{ $.Values.global.gitOpsSubNamespace }}
 - name: global.vpArgoNamespace
   value: {{ $.Values.global.vpArgoNamespace }}
+- name: global.variantDir
+  value: {{ $.Values.global.variantDir | default "" }}
 {{- end }} {{- /*acm.app.policies.helmparameters */}}
 
 {{- define "acm.app.clusterSelector" -}}
