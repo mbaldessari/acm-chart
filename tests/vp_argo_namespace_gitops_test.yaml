@@ -99,13 +99,13 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.metadata.name
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.metadata.name
           value: custom-argocd
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.metadata.namespace
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.metadata.namespace
           value: custom-argocd
 
   - it: should use default vpArgoNamespace for ArgoCD resource name and namespace
@@ -116,13 +116,13 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.metadata.name
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.metadata.name
           value: openshift-gitops
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.metadata.namespace
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.metadata.namespace
           value: openshift-gitops
 
   - it: should create ConsoleLink when vpArgoNamespace is not openshift-gitops
@@ -137,30 +137,30 @@ tests:
           value: group-one-gitops-policy-argocd
         lengthEqual:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates
-          count: 2
+          count: 3
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[2].objectDefinition.kind
           value: ConsoleLink
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.metadata.name
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[2].objectDefinition.metadata.name
           value: custom-argocd-gitops-link
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.location
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[2].objectDefinition.spec.location
           value: ApplicationMenu
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.text
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[2].objectDefinition.spec.text
           value: Argo CD VP
 
   - it: should NOT create ConsoleLink when vpArgoNamespace is openshift-gitops
@@ -172,7 +172,7 @@ tests:
           value: group-one-gitops-policy-argocd
         lengthEqual:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates
-          count: 1
+          count: 2
 
   - it: should have 3 object-templates with custom vpArgoNamespace and no gitOpsSubNamespace
     values:

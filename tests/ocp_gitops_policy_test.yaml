@@ -104,25 +104,25 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         lengthEqual:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks
           count: 2
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[0].group
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[0].group
           value: operators.coreos.com
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[0].kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[0].kind
           value: Subscription
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[1].kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[1].kind
           value: PersistentVolumeClaim
 
   - it: Should append a single extra resource healthcheck
@@ -142,31 +142,31 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         lengthEqual:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks
           count: 3
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[0].group
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[0].group
           value: operators.coreos.com
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[1].kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[1].kind
           value: PersistentVolumeClaim
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[2].group
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[2].group
           value: argoproj.io
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[2].kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[2].kind
           value: Application
 
   - it: Should append multiple extra resource healthchecks
@@ -194,29 +194,29 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         lengthEqual:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks
           count: 4
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[1].kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[1].kind
           value: PersistentVolumeClaim
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[2].group
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[2].group
           value: argoproj.io
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[3].group
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[3].group
           value: batch
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.resourceHealthChecks[3].kind
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[3].kind
           value: Job
