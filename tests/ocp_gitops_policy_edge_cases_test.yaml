@@ -19,13 +19,13 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.tls.insecureEdgeTerminationPolicy
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.tls.insecureEdgeTerminationPolicy
           value: Allow
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.tls.termination
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.tls.termination
           value: passthrough
 
   - it: should not include route TLS block when argocdServer is not configured
@@ -36,7 +36,7 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         isNull:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.tls
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.tls
 
   - it: should use default TLS values when tls block has a key but no overrides
     values:
@@ -53,13 +53,13 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.tls.insecureEdgeTerminationPolicy
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.tls.insecureEdgeTerminationPolicy
           value: Redirect
       - documentSelector:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.tls.termination
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.tls.termination
           value: reencrypt
 
   - it: should not include route TLS block when tls is empty map
@@ -75,7 +75,7 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         isNull:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.tls
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.tls
 
   - it: should render multiple groups each with their own set of resources
     set:
@@ -123,7 +123,7 @@ tests:
           path: metadata.name
           value: group-one-gitops-policy-argocd
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.server.route.enabled
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.enabled
           value: true
 
   - it: should set default channel when neither spokeGitops nor main gitops is set

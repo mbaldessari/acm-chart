@@ -137,6 +137,22 @@ spec:
             include:
               - default
           object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: argoproj.io/v1alpha1
+                kind: AppProject
+                metadata:
+                  name: default
+                  namespace: {{ $.Values.global.vpArgoNamespace }}
+                spec:
+                  clusterResourceWhitelist:
+                  - group: '*'
+                    kind: '*'
+                  destinations:
+                  - namespace: '*'
+                    server: '*'
+                  sourceRepos:
+                  - '*'
             - complianceType: mustonlyhave
               objectDefinition:
                 apiVersion: argoproj.io/v1beta1
@@ -275,6 +291,14 @@ spec:
 {{ .check | nindent 24 }}
 {{- end }}
                   server:
+                    initContainers:
+                    - command:
+                      - bash
+                      - -c
+                      - sleep 5
+                      image: registry.redhat.io/ubi9/ubi-minimal:latest
+                      name: wait-for-appproject
+                      resources: {}
                     autoscale:
                       enabled: false
                     grpc:
