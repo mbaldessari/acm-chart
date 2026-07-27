@@ -2,6 +2,17 @@
 Default always defined valueFiles to be included when pushing the cluster wide argo application via acm
 */}}
 {{- define "acm.app.policies.valuefiles" -}}
+{{- if $.Values.global.vpNewFolderDir }}
+- "/values-global.yaml"
+- "/variants/{{ $.Values.clusterGroup.name }}/values-{{ .name }}.yaml"
+- '/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
+- '/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}.yaml'
+- '/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ .name }}.yaml'
+# We cannot use $.Values.global.clusterVersion because that gets resolved to the
+# hub's cluster version, whereas we want to include the spoke cluster version
+- '/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}-{{ .name }}.yaml'
+- '/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml'
+{{- else }}
 - "/values-global.yaml"
 - "/values-{{ .name }}.yaml"
 - '/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
@@ -11,9 +22,21 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 # hub's cluster version, whereas we want to include the spoke cluster version
 - '/values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}-{{ .name }}.yaml'
 - '/values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml'
+{{- end }} {{/* if $.Values.global.vpNewFolderDir */}}
 {{- end }} {{- /*acm.app.policies.valuefiles */}}
 
 {{- define "acm.app.policies.multisourcevaluefiles" -}}
+{{- if $.Values.global.vpNewFolderDir }}
+- "$patternref/values-global.yaml"
+- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ .name }}.yaml"
+- '$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
+- '$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}.yaml'
+- '$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}-{{ .name }}.yaml'
+# We cannot use $.Values.global.clusterVersion because that gets resolved to the
+# hub's cluster version, whereas we want to include the spoke cluster version
+- '$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}-{{ .name }}.yaml'
+- '$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml'
+{{- else }}
 - "$patternref/values-global.yaml"
 - "$patternref/values-{{ .name }}.yaml"
 - '$patternref/values-{{ `{{ (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").spec.platformSpec.type }}` }}.yaml'
@@ -23,6 +46,7 @@ Default always defined valueFiles to be included when pushing the cluster wide a
 # hub's cluster version, whereas we want to include the spoke cluster version
 - '$patternref/values-{{ `{{ printf "%d.%d" ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Major) ((semver (index (lookup "config.openshift.io/v1" "ClusterVersion" "" "version").status.history 0).version).Minor) }}` }}-{{ .name }}.yaml'
 - '$patternref/values-{{ `{{ (split "." (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain)._1 }}` }}.yaml'
+{{- end }} {{/* if $.Values.global.vpNewFolderDir */}}
 {{- end }} {{- /*acm.app.policies.multisourcevaluefiles */}}
 
 {{- define "acm.app.policies.helmparameters" -}}
@@ -71,6 +95,8 @@ if this chart gets DeleteSpokeChildApps, it will set deletePattern to DeleteChil
   value: {{ $.Values.global.gitOpsSubNamespace }}
 - name: global.vpArgoNamespace
   value: {{ $.Values.global.vpArgoNamespace }}
+- name: global.vpNewFolderDir
+  value: {{ $.Values.global.vpNewFolderDir | quote | default "false" }}  
 {{- end }} {{- /*acm.app.policies.helmparameters */}}
 
 {{- define "acm.app.clusterSelector" -}}

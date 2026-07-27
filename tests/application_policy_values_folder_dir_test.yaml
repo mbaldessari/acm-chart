@@ -1,0 +1,87 @@
+suite: Test vpNewFolderDir valueFiles layout in application policies
+templates:
+  - templates/policies/application-policies.yaml
+release:
+  name: release-test
+tests:
+  - it: should use flat value file paths when vpNewFolderDir is not set (single-source)
+    values:
+      - ./clusterselector_values.yaml
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.source.helm.valueFiles
+          content: "/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.source.helm.valueFiles
+          content: "/values-group-one.yaml"
+
+  - it: should use variants directory paths when vpNewFolderDir is true (single-source)
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpNewFolderDir: true
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.source.helm.valueFiles
+          content: "/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.source.helm.valueFiles
+          content: "/variants/hub/values-group-one.yaml"
+
+  - it: should use flat value file paths when vpNewFolderDir is not set (multi-source)
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: "https://charts.example.com"
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-group-one.yaml"
+
+  - it: should use variants directory paths when vpNewFolderDir is true (multi-source)
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        multiSourceSupport: true
+        multiSourceRepoUrl: "https://charts.example.com"
+        multiSourceTargetRevision: "0.1.0"
+        vpNewFolderDir: true
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/values-global.yaml"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-clustergroup-policy
+        contains:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.valueFiles
+          content: "$patternref/variants/hub/values-group-one.yaml"
