@@ -72,6 +72,11 @@ acm:
   # -- MultiClusterHub spec (empty by default)
   mch_spec: {}
 
+  # -- Custom overrides for the spoke ArgoCD instance spec.
+  # Keys are deep-merged into the default spec (maps merge, lists replace).
+  # @default -- empty dict (no overrides)
+  customArgoYaml: {}
+
   # -- Extra resource health checks to add to the spoke ArgoCD instance.
   # Each entry needs group, kind, and check (Lua script) fields.
   # @default -- empty list

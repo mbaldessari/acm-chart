@@ -290,3 +290,183 @@ false
 false
 {{- end -}}
 {{- end }}
+
+{{/*
+Default ArgoCD spec for spoke clusters. Rendered as YAML, parsed by fromYaml,
+and optionally merged with acm.customArgoYaml via mustMergeOverwrite.
+*/}}
+{{- define "acm.default.argocd.spec" -}}
+applicationSet:
+  resources:
+    limits:
+      cpu: "2"
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  webhookServer:
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+controller:
+  processors: {}
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 1Gi
+  sharding: {}
+grafana:
+  enabled: false
+  ingress:
+    enabled: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 250m
+      memory: 128Mi
+  route:
+    enabled: false
+ha:
+  enabled: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 250m
+      memory: 128Mi
+initialSSHKnownHosts: {}
+monitoring:
+  enabled: false
+notifications:
+  enabled: false
+prometheus:
+  enabled: false
+  ingress:
+    enabled: false
+  route:
+    enabled: false
+rbac:
+  defaultPolicy: role:readonly
+  policy: |-
+    g, system:cluster-admins, role:admin
+    g, cluster-admins, role:admin
+    g, admin, role:admin
+  scopes: '[groups,email]'
+redis:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 250m
+      memory: 128Mi
+repo:
+  initContainers:
+  - command:
+    - bash
+    - -c
+    - cat /var/run/kube-root-ca/ca.crt /var/run/trusted-ca/ca-bundle.crt /var/run/trusted-hub/hub-kube-root-ca.crt > /tmp/ca-bundles/ca-bundle.crt
+      || true
+    image: registry.redhat.io/ubi9/ubi-minimal:latest
+    name: fetch-ca
+    resources: {}
+    volumeMounts:
+    - mountPath: /var/run/kube-root-ca
+      name: kube-root-ca
+    - mountPath: /var/run/trusted-ca
+      name: trusted-ca-bundle
+    - mountPath: /var/run/trusted-hub
+      name: trusted-hub-bundle
+    - mountPath: /tmp/ca-bundles
+      name: ca-bundles
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  volumeMounts:
+  - mountPath: /etc/pki/tls/certs
+    name: ca-bundles
+  volumes:
+  - configMap:
+      name: kube-root-ca.crt
+    name: kube-root-ca
+  - configMap:
+      name: trusted-ca-bundle
+    name: trusted-ca-bundle
+  - configMap:
+      name: trusted-hub-bundle
+    name: trusted-hub-bundle
+  - emptyDir: {}
+    name: ca-bundles
+resourceExclusions: |-
+  - apiGroups:
+    - tekton.dev
+    clusters:
+    - '*'
+    kinds:
+    - TaskRun
+    - PipelineRun
+resourceHealthChecks:
+{{- include "acm.default.healthchecks" . | nindent 2 }}
+{{- range $.Values.acm.extraResourceHealthChecks }}
+  - group: {{ .group }}
+    kind: {{ .kind }}
+    check: |
+{{ .check | nindent 6 }}
+{{- end }}
+server:
+  initContainers:
+  - command:
+    - bash
+    - -c
+    - sleep 5
+    image: registry.redhat.io/ubi9/ubi-minimal:latest
+    name: wait-for-appproject
+    resources: {}
+  autoscale:
+    enabled: false
+  grpc:
+    ingress:
+      enabled: false
+  ingress:
+    enabled: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 125m
+      memory: 128Mi
+  route:
+    enabled: true
+    {{- if and ($.Values.global.argocdServer) ($.Values.global.argocdServer.route) ($.Values.global.argocdServer.route.tls) }}
+    tls:
+      insecureEdgeTerminationPolicy: {{ default "Redirect" $.Values.global.argocdServer.route.tls.insecureEdgeTerminationPolicy }}
+      termination: {{ default "reencrypt" $.Values.global.argocdServer.route.tls.termination }}
+    {{- end }}
+  service:
+    type: ""
+sso:
+  dex:
+    openShiftOAuth: true
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+  provider: dex
+tls:
+  ca: {}
+{{- end }}
