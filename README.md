@@ -1,6 +1,6 @@
 # acm
 
-![Version: 0.2.10](https://img.shields.io/badge/Version-0.2.10-informational?style=flat-square)
+![Version: 0.2.11](https://img.shields.io/badge/Version-0.2.11-informational?style=flat-square)
 
 A Helm chart to configure Advanced Cluster Manager for OpenShift.
 
@@ -10,6 +10,7 @@ This chart is used by the Validated Patterns to configure ACM and manage remote 
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| acm.customArgoYaml | object | empty dict (no overrides) | Custom overrides for the spoke ArgoCD instance spec. Keys are deep-merged into the default spec (maps merge, lists replace). |
 | acm.extraResourceHealthChecks | list | empty list | Extra resource health checks to add to the spoke ArgoCD instance. Each entry needs group, kind, and check (Lua script) fields. |
 | acm.mce_operator | object | Uses the official redhat sources | Just used for IIB testing, drives the source and channel for the MCE subscription triggered by ACM |
 | acm.mch_spec | object | `{}` | MultiClusterHub spec (empty by default) |
