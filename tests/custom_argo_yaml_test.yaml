@@ -1,0 +1,123 @@
+suite: Test customArgoYaml merge into spoke ArgoCD spec
+templates:
+  - templates/policies/ocp-gitops-policy.yaml
+release:
+  name: release-test
+tests:
+  - it: should use default controller resources when customArgoYaml is empty
+    values:
+      - ./clusterselector_values.yaml
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.controller.resources.limits.cpu
+          value: "2"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.controller.resources.limits.memory
+          value: 2Gi
+
+  - it: should override controller resource limits with customArgoYaml
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      acm:
+        customArgoYaml:
+          controller:
+            resources:
+              limits:
+                cpu: "4"
+                memory: 17Gi
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.controller.resources.limits.cpu
+          value: "4"
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.controller.resources.limits.memory
+          value: 17Gi
+      # requests should be preserved from defaults
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.controller.resources.requests.cpu
+          value: 250m
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.controller.resources.requests.memory
+          value: 1Gi
+
+  - it: should allow adding new spec fields via customArgoYaml
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      acm:
+        customArgoYaml:
+          extraConfig:
+            foo: bar
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.extraConfig.foo
+          value: bar
+      # default fields should still be present
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.server.route.enabled
+          value: true
+
+  - it: should override a boolean default via customArgoYaml
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      acm:
+        customArgoYaml:
+          ha:
+            enabled: true
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.ha.enabled
+          value: true
+
+  - it: should preserve healthchecks when customArgoYaml sets unrelated fields
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      acm:
+        customArgoYaml:
+          controller:
+            resources:
+              limits:
+                cpu: "8"
+    asserts:
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        lengthEqual:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks
+          count: 2
+      - documentSelector:
+          path: metadata.name
+          value: group-one-gitops-policy-argocd
+        equal:
+          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.resourceHealthChecks[0].group
+          value: operators.coreos.com
