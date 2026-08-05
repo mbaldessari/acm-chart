@@ -146,8 +146,8 @@ tests:
             name: openshift-gitops-argocd-server
             namespace: openshift-gitops
 
-  # Tests for wrapper chart second source
-  - it: Should always use the wrapper-app-of-apps-chart as second source
+  # Tests for acm-chart second source (wrapper is inlined into acm-chart)
+  - it: Should always use the acm-chart as second source
     values:
       - ./clusterselector_values.yaml
     set:
@@ -161,13 +161,13 @@ tests:
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://github.com/mbaldessari/wrapper-app-of-apps-chart"
+          value: "https://github.com/mbaldessari/acm-chart"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].targetRevision
-          value: "main"
+          value: "extra-app-on-spokes"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -175,7 +175,7 @@ tests:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
           value: "."
 
-  - it: Should use wrapper chart even when clusterGroupGitRepoUrl is set
+  - it: Should use acm-chart even when clusterGroupGitRepoUrl is set
     values:
       - ./clusterselector_values.yaml
     set:
@@ -193,13 +193,13 @@ tests:
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://github.com/mbaldessari/wrapper-app-of-apps-chart"
+          value: "https://github.com/mbaldessari/acm-chart"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].targetRevision
-          value: "main"
+          value: "extra-app-on-spokes"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -227,7 +227,7 @@ tests:
           value: group-one-clustergroup-policy
         lengthEqual:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.parameters
-          count: 22 # 19 (in the helper) +3 (1 override, and 1 clusterGroup.name)
+          count: 23 # 20 (in the helper) +3 (1 override, and 1 clusterGroup.name)
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
@@ -262,7 +262,7 @@ tests:
           value: group-one-clustergroup-policy
         lengthEqual:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].helm.parameters
-          count: 22 # 19 (in the helper) +3 (1 override, and 1 clusterGroup.name)
+          count: 23 # 20 (in the helper) +3 (1 override, and 1 clusterGroup.name)
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
