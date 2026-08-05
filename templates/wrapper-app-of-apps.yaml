@@ -56,8 +56,6 @@ spec:
           - name: {{ . }}
             value: {{ $.Values.global.pattern }}
           {{- end }}
-          - name: global.vpWrapper
-            value: true
   {{- if .ignoreDifferences }}
   ignoreDifferences: {{ .ignoreDifferences | toPrettyJson }}
   {{- end }}
