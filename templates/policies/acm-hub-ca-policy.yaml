@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 # This pushes out the HUB's Certificate Authorities on to the imported clusters
 {{- if eq (include "acm.ishubcluster" .) "true" }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
@@ -212,3 +213,4 @@ spec:
 {{- end }}{{/* if (eq ((($.Values.global).secretStore).backend) "vault") */}}
 {{- end }}{{/* range .Values.clusterGroup.managedClusterGroups */}}
 {{- end }}{{/* ishubcluster */}}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}

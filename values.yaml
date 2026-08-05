@@ -5,6 +5,8 @@ main:
     channel: "gitops-1.21"
 
 global:
+  # -- When true, disables all ACM templates and renders only the wrapper app-of-apps Application
+  vpWrapper: false
   # -- List of additional value files to be passed to the pattern
   extraValueFiles: []
   pattern: none

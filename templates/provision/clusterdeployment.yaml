@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
 
@@ -81,3 +82,4 @@ spec:
   hubAcceptsClient: true
 {{- end }}{{- /* range $group.clusterDeployments */}}
 {{- end }}{{- /* range .Values.clusterGroup.managedClusterGroups */}}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}

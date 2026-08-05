@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
 apiVersion: policy.open-cluster-management.io/v1
@@ -210,3 +211,4 @@ spec:
   ) | nindent 2 }}
 ---
 {{- end }}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}

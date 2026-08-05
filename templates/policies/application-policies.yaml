@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 # TODO: Also create a GitOpsCluster.apps.open-cluster-management.io
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- $group := . }}
@@ -212,3 +213,4 @@ spec:
 ---
 {{- end }}
 {{- end }}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}

@@ -480,3 +480,118 @@ sso:
 tls:
   ca: {}
 {{- end }}
+
+{{/*
+Helpers from wrapper-app-of-apps-chart, used when .Values.global.vpWrapper is true
+*/}}
+
+{{- define "clustergroup.app.globalvalues.helmparameters" -}}
+- name: global.repoURL
+  value: {{ $.Values.global.repoURL }}
+- name: global.originURL
+  value: {{ $.Values.global.originURL }}
+- name: global.targetRevision
+  value: {{ $.Values.global.targetRevision }}
+- name: global.namespace
+  value: $ARGOCD_APP_NAMESPACE
+- name: global.pattern
+  value: {{ $.Values.global.pattern }}
+- name: global.clusterDomain
+  value: {{ $.Values.global.clusterDomain }}
+- name: global.localClusterName
+  value: {{ $.Values.global.localClusterName }}
+- name: global.clusterVersion
+  value: "{{ $.Values.global.clusterVersion }}"
+- name: global.clusterPlatform
+  value: "{{ $.Values.global.clusterPlatform }}"
+- name: global.hubClusterDomain
+  value: {{ $.Values.global.hubClusterDomain }}
+- name: global.multiSourceSupport
+  value: {{ $.Values.global.multiSourceSupport | quote }}
+- name: global.multiSourceRepoUrl
+  value: {{ $.Values.global.multiSourceRepoUrl }}
+- name: global.multiSourceTargetRevision
+  value: {{ $.Values.global.multiSourceTargetRevision }}
+- name: global.localClusterDomain
+  value: {{ coalesce $.Values.global.localClusterDomain $.Values.global.hubClusterDomain }}
+- name: global.privateRepo
+  value: {{ $.Values.global.privateRepo | quote }}
+- name: global.experimentalCapabilities
+  value: {{ $.Values.global.experimentalCapabilities | default "" }}
+- name: global.deletePattern
+  value: {{ $.Values.global.deletePattern }}
+- name: global.gitOpsSubNamespace
+  value: {{ $.Values.global.gitOpsSubNamespace | default "" }}
+- name: global.vpArgoNamespace
+  value: {{ $.Values.global.vpArgoNamespace }}
+{{- end }} {{/* clustergroup.globalvaluesparameters */}}
+
+{{- define "clustergroup.app.globalvalues.prefixedvaluefiles" -}}
+- "$patternref/values-global.yaml"
+- "$patternref/values-{{ $.Values.clusterGroup.name }}.yaml"
+{{- if $.Values.global.clusterPlatform }}
+- "$patternref/values-{{ $.Values.global.clusterPlatform }}.yaml"
+  {{- if $.Values.global.clusterVersion }}
+- "$patternref/values-{{ $.Values.global.clusterPlatform }}-{{ $.Values.global.clusterVersion }}.yaml"
+  {{- end }}
+- "$patternref/values-{{ $.Values.global.clusterPlatform }}-{{ $.Values.clusterGroup.name }}.yaml"
+{{- end }}
+{{- if $.Values.global.clusterVersion }}
+- "$patternref/values-{{ $.Values.global.clusterVersion }}-{{ $.Values.clusterGroup.name }}.yaml"
+{{- end }}
+{{- if $.Values.global.localClusterName }}
+- "$patternref/values-{{ $.Values.global.localClusterName }}.yaml"
+{{- end }}
+{{- if $.Values.global.extraValueFiles }}
+{{- range $.Values.global.extraValueFiles }}
+- "$patternref/{{ . }}"
+{{- end }} {{/* range $.Values.global.extraValueFiles */}}
+{{- end }} {{/* if $.Values.global.extraValueFiles */}}
+{{- end }} {{/* clustergroup.app.globalvalues.prefixedvaluefiles */}}
+
+{{- define "clustergroup.sharedvaluefiles" -}}
+{{- $app := index . 0 }}
+{{- $root := index . 1 }}
+{{- range $valueFile := $root.Values.clusterGroup.sharedValueFiles }}
+{{- $resolvedFile := tpl $valueFile $root }}
+{{- if hasPrefix "$patternref/" $resolvedFile }}
+- {{ $resolvedFile | quote }}
+{{- else }}
+- {{ printf "$patternref%s" $resolvedFile | quote }}
+{{- end }}
+{{- end }}
+{{- end }} {{- /* clustergroup.sharedvaluefiles */}}
+
+{{- define "clustergroup.app.extravaluefiles" -}}
+{{- $app := index . 0 }}
+{{- $root := index . 1 }}
+{{- range $valueFile := $app.extraValueFiles }}
+{{- $resolvedFile := tpl $valueFile $root }}
+{{- if hasPrefix "$patternref/" $resolvedFile }}
+- {{ $resolvedFile | quote }}
+{{- else }}
+- {{ printf "$patternref%s" $resolvedFile | quote }}
+{{- end }}
+{{- end }}
+{{- end }} {{- /* clustergroup.app.extravaluefiles */}}
+
+{{/*
+Renders annotations from a given context
+Usage: {{ include "clustergroup.annotations" .annotations }}
+*/}}
+{{- define "clustergroup.annotations" -}}
+{{- if . }}
+annotations:
+  {{- range $key, $value := . }}
+  {{ $key }}: {{ $value | default "" | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "clustergroup.template.argocdnamespace" -}}
+{{- if .Values.global.singleArgoCD }}
+{{- .Values.global.vpArgoNamespace -}}
+{{- else }}
+{{- .Values.global.pattern }}-{{ .Values.clusterGroup.name -}}
+{{- end }}{{- /* if .singleArgoCD */}}
+{{- end }} {{- /* clustergroup.template.argocdnamespace */}}

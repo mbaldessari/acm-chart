@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 {{- range .Values.clusterGroup.managedClusterGroups }}
 {{- if or .clusterPools .clusterDeployments }}{{- /* We only create ManagedClusterSets if there are clusterPools or clusterDeployments defined */}}
 ---
@@ -11,3 +12,4 @@ metadata:
 
 {{- end }}{{- /* if .clusterPools) */}}
 {{- end }}{{- /* range .Values.clusterGroup.managedClusterGroups */}}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}

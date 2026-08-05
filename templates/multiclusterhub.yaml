@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 {{- $channel := "" }}
 {{- if .Values.acm.mce_operator.channel }}
 {{- $channel = printf ",\"channel\": \"%s\"" .Values.acm.mce_operator.channel }}
@@ -12,3 +13,4 @@ metadata:
     patterns.gitops.validatedpatterns.io/managed: "true"
 spec:
 {{ .Values.acm.mch_spec | toYaml | indent 2 }}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}

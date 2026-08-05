@@ -1,0 +1,81 @@
+{{- if .Values.global.vpWrapper }}
+{{- if ($.Values.global.deletePattern | ne "DeleteChildApps") }} {{- /* When a pattern is deleting applications should be removed */}}
+{{- $namespace := include "clustergroup.template.argocdnamespace" . | trim }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $.Values.global.pattern }}-app
+  namespace: {{ $namespace }}
+  labels:
+    validatedpatterns.io/pattern: {{ $.Values.global.pattern }}
+  {{- include "clustergroup.annotations" .annotations | nindent 2 }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  destination:
+    name: in-cluster
+    namespace: {{ default $namespace .namespace }}
+  project: default
+  sources:
+    - repoURL: {{ $.Values.global.repoURL }}
+      {{- /* We do not allow overriding the values with .targetRevision because when we use .targetRevision in a chart to specify the helm
+             chart, that revision (e.g. 0.0.1) won't exist in the git tree. So here we simply always take the pattern's git branch/commit */}}
+      targetRevision: {{ $.Values.global.targetRevision }}
+      ref: patternref
+      {{/* If we're using the clustergroup chart from a git repo let's use those */}}
+      {{- $clusterGroupGitRepoUrl := "" }}
+      {{- if and $.Values.main $.Values.main.multiSourceConfig }}
+        {{- $clusterGroupGitRepoUrl = $.Values.main.multiSourceConfig.clusterGroupGitRepoUrl }}
+      {{- end }}
+      {{- $clusterGroupChartGitRevision := "" }}
+      {{- if and $.Values.main $.Values.main.multiSourceConfig }}
+        {{- $clusterGroupChartGitRevision = $.Values.main.multiSourceConfig.clusterGroupChartGitRevision }}
+      {{- end }}
+    - repoURL: {{ coalesce $clusterGroupGitRepoUrl $.Values.global.multiSourceRepoUrl }}
+      targetRevision: {{ coalesce $clusterGroupChartGitRevision $.Values.global.multiSourceTargetRevision }}
+      {{- if and $.Values.main $.Values.main.multiSourceConfig (hasKey $.Values.main.multiSourceConfig "clusterGroupGitRepoUrl") }}
+      path: "."
+      {{- else }}
+      chart: clustergroup
+      {{- end }}
+      helm:
+        ignoreMissingValueFiles: true
+        values: |
+          extraParametersNested:
+          {{- range $k, $v := $.Values.extraParametersNested }}
+            {{ $k }}: {{ printf "%s" $v | quote }}
+          {{- end }}
+        valueFiles:
+        {{- include "clustergroup.app.globalvalues.prefixedvaluefiles" $ | nindent 8 }}
+        {{- include "clustergroup.sharedvaluefiles" (list . $) | nindent 8 }}
+        {{- include "clustergroup.app.extravaluefiles" (list . $) | nindent 8 }}
+        parameters:
+          {{- include "clustergroup.app.globalvalues.helmparameters" $ | nindent 10 }}
+          {{- range .extraPatternNameFields }}
+          - name: {{ . }}
+            value: {{ $.Values.global.pattern }}
+          {{- end }}
+          - name: global.vpWrapper
+            value: true
+  {{- if .ignoreDifferences }}
+  ignoreDifferences: {{ .ignoreDifferences | toPrettyJson }}
+  {{- end }}
+  {{ $syncpolicy := coalesce .syncPolicy $.Values.global.options.syncPolicy }}
+  {{- if and (kindIs "string" $syncpolicy) (eq ($syncpolicy | lower) "manual") }}
+  syncPolicy: null
+  {{- else if and (kindIs "string" $syncpolicy) (eq ($syncpolicy | lower)  "automatic") }}
+  syncPolicy:
+    automated: {}
+    retry:
+      limit: {{ default 20 $.Values.global.options.applicationRetryLimit }}
+  {{- else if $syncpolicy }}
+  syncPolicy: {{ .syncPolicy | toPrettyJson }}
+  {{- else }}
+  syncPolicy:
+    automated: {}
+    retry:
+      limit: {{ default 20 $.Values.global.options.applicationRetryLimit }}
+  {{- end }}{{- /* .syncPolicy */}}
+{{- end }}{{- /* if ($.Values.global.deletePattern | default "0" | int | ne 1) */}}
+{{- end }}{{/* if .Values.global.vpWrapper */}}

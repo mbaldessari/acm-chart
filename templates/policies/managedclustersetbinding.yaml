@@ -1,3 +1,4 @@
+{{- if not .Values.global.vpWrapper }}
 # ManagedClusterSetBinding is required for the Placement API to schedule
 # clusters from the default ManagedClusterSet in this namespace.
 {{- if .Values.clusterGroup.managedClusterGroups }}
@@ -10,3 +11,4 @@ metadata:
 spec:
   clusterSet: default
 {{- end }}
+{{- end }}{{/* if not .Values.global.vpWrapper */}}
