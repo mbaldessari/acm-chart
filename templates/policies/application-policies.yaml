@@ -81,8 +81,8 @@ spec:
                       {{- if and $.Values.main $.Values.main.multiSourceConfig }}
                         {{- $clusterGroupChartGitRevision = $.Values.main.multiSourceConfig.clusterGroupChartGitRevision }}
                       {{- end }}
-                    - repoURL: https://github.com/mbaldessari/wrapper-app-of-apps-chart
-                      targetRevision: main
+                    - repoURL: https://github.com/mbaldessari/acm-chart
+                      targetRevision: extra-app-on-spokes
                       path: "."
                       helm:
                         ignoreMissingValueFiles: true
@@ -115,6 +115,8 @@ spec:
                           path: {{ .path }}
                         {{- end }}
                        {{- end }}
+                        - name: global.vpWrapper
+                          value: true
                   {{- else }}
                   source:
                     repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}

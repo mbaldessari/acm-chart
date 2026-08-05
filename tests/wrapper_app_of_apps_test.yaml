@@ -1,0 +1,361 @@
+suite: Test wrapper app-of-apps template
+templates:
+  - templates/wrapper-app-of-apps.yaml
+release:
+  name: release-test
+tests:
+
+  - it: Should not render when vpWrapper is false (default)
+    values:
+      - ./clusterselector_values.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: Should render a single Application when vpWrapper is true
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        targetRevision: main
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Application
+      - isAPIVersion:
+          of: argoproj.io/v1alpha1
+
+  - it: Should name the Application as pattern-app
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: metadata.name
+          value: mypattern-app
+
+  - it: Should use pattern-clusterGroupName as namespace by default
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: mypattern-hub
+
+  - it: Should use vpArgoNamespace when singleArgoCD is true
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        singleArgoCD: true
+        vpArgoNamespace: openshift-gitops
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: openshift-gitops
+      - equal:
+          path: spec.destination.namespace
+          value: openshift-gitops
+
+  - it: Should have the pattern label
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: metadata.labels["validatedpatterns.io/pattern"]
+          value: mypattern
+
+  - it: Should have the foreground finalizer
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - contains:
+          path: metadata.finalizers
+          content: resources-finalizer.argocd.argoproj.io/foreground
+
+  - it: Should set first source as patternref
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        targetRevision: main
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: spec.sources[0].repoURL
+          value: https://github.com/example/pattern
+      - equal:
+          path: spec.sources[0].targetRevision
+          value: main
+      - equal:
+          path: spec.sources[0].ref
+          value: patternref
+
+  - it: Should use chart clustergroup when clusterGroupGitRepoUrl is not set
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: spec.sources[1].repoURL
+          value: https://charts.example.com
+      - equal:
+          path: spec.sources[1].targetRevision
+          value: "0.1.0"
+      - equal:
+          path: spec.sources[1].chart
+          value: clustergroup
+      - isNull:
+          path: spec.sources[1].path
+
+  - it: Should use path when clusterGroupGitRepoUrl is set
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+      main:
+        multiSourceConfig:
+          clusterGroupGitRepoUrl: https://github.com/example/clustergroup
+          clusterGroupChartGitRevision: feature-branch
+    asserts:
+      - equal:
+          path: spec.sources[1].repoURL
+          value: https://github.com/example/clustergroup
+      - equal:
+          path: spec.sources[1].targetRevision
+          value: feature-branch
+      - equal:
+          path: spec.sources[1].path
+          value: "."
+      - isNull:
+          path: spec.sources[1].chart
+
+  - it: Should include vpWrapper parameter in helm parameters
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.vpWrapper
+            value: true
+
+  - it: Should include all global helm parameters
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        targetRevision: main
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.repoURL
+            value: https://github.com/example/pattern
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.targetRevision
+            value: main
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.pattern
+            value: mypattern
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.multiSourceRepoUrl
+            value: https://charts.example.com
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.multiSourceTargetRevision
+            value: "0.1.0"
+      - contains:
+          path: spec.sources[1].helm.parameters
+          content:
+            name: global.vpArgoNamespace
+            value: openshift-gitops
+
+  - it: Should have prefixed value files
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-global.yaml"
+      - contains:
+          path: spec.sources[1].helm.valueFiles
+          content: "$patternref/values-hub.yaml"
+
+  - it: Should not render when deletePattern is DeleteChildApps
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        deletePattern: DeleteChildApps
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: Should render when deletePattern is some other value
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        deletePattern: SomeOtherValue
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - hasDocuments:
+          count: 1
+
+  - it: Should have default syncPolicy with automated and retry
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: spec.syncPolicy.automated
+          value: {}
+      - equal:
+          path: spec.syncPolicy.retry.limit
+          value: 20
+
+  - it: Should use custom applicationRetryLimit
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+        options:
+          applicationRetryLimit: 50
+    asserts:
+      - equal:
+          path: spec.syncPolicy.retry.limit
+          value: 50
+
+  - it: Should set destination to in-cluster
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - equal:
+          path: spec.destination.name
+          value: in-cluster
+      - equal:
+          path: spec.project
+          value: default
+
+  - it: Should not render any ACM templates when vpWrapper is true
+    values:
+      - ./clusterselector_values.yaml
+    set:
+      global:
+        vpWrapper: true
+        pattern: mypattern
+        repoURL: https://github.com/example/pattern
+        multiSourceRepoUrl: https://charts.example.com
+        multiSourceTargetRevision: "0.1.0"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Application

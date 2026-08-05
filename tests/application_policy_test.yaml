@@ -146,8 +146,8 @@ tests:
             name: openshift-gitops-argocd-server
             namespace: openshift-gitops
 
-  # Tests for clusterGroupGitRepoUrl and clusterGroupChartGitRevision
-  - it: Should use chart clustergroup when clusterGroupGitRepoUrl is not set
+  # Tests for wrapper chart second source
+  - it: Should always use the wrapper-app-of-apps-chart as second source
     values:
       - ./clusterselector_values.yaml
     set:
@@ -160,27 +160,22 @@ tests:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].chart
-          value: clustergroup
-      - documentSelector:
-          path: metadata.name
-          value: group-one-clustergroup-policy
-        equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://charts.example.com"
+          value: "https://github.com/mbaldessari/wrapper-app-of-apps-chart"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].targetRevision
-          value: "0.1.0"
+          value: "main"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
-        isNull:
+        equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
+          value: "."
 
-  - it: Should use path when clusterGroupGitRepoUrl is set
+  - it: Should use wrapper chart even when clusterGroupGitRepoUrl is set
     values:
       - ./clusterselector_values.yaml
     set:
@@ -197,56 +192,20 @@ tests:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
-          value: "."
-      - documentSelector:
-          path: metadata.name
-          value: group-one-clustergroup-policy
-        equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://github.com/example/clustergroup-chart"
+          value: "https://github.com/mbaldessari/wrapper-app-of-apps-chart"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].targetRevision
-          value: "feature-branch"
-      - documentSelector:
-          path: metadata.name
-          value: group-one-clustergroup-policy
-        isNull:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].chart
-
-  - it: Should use clusterGroupGitRepoUrl with fallback to multiSourceTargetRevision when only clusterGroupGitRepoUrl is set
-    values:
-      - ./clusterselector_values.yaml
-    set:
-      global:
-        multiSourceSupport: true
-        multiSourceRepoUrl: "https://charts.example.com"
-        multiSourceTargetRevision: "0.1.0"
-      main:
-        multiSourceConfig:
-          clusterGroupGitRepoUrl: "https://github.com/example/clustergroup-chart"
-    asserts:
+          value: "main"
       - documentSelector:
           path: metadata.name
           value: group-one-clustergroup-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].path
           value: "."
-      - documentSelector:
-          path: metadata.name
-          value: group-one-clustergroup-policy
-        equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].repoURL
-          value: "https://github.com/example/clustergroup-chart"
-      - documentSelector:
-          path: metadata.name
-          value: group-one-clustergroup-policy
-        equal:
-          path: spec.policy-templates[0].objectDefinition.spec.object-templates[1].objectDefinition.spec.sources[1].targetRevision
-          value: "0.1.0"
 
   - it: should render a spoke app of apps with the correct helm parameters (no deletePattern set)
     values:
