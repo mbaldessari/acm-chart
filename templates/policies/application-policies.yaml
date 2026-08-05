@@ -116,7 +116,7 @@ spec:
                         {{- end }}
                        {{- end }}
                         - name: global.vpWrapper
-                          value: true
+                          value: "true"
                   {{- else }}
                   source:
                     repoURL: {{ coalesce .repoURL $.Values.global.repoURL }}
