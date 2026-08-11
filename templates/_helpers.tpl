@@ -95,6 +95,8 @@ if this chart gets DeleteSpokeChildApps, it will set deletePattern to DeleteChil
   value: {{ $.Values.global.gitOpsSubNamespace }}
 - name: global.vpArgoNamespace
   value: {{ $.Values.global.vpArgoNamespace }}
+- name: global.hubVariant
+  value: {{ $.Values.clusterGroup.name }}
 - name: global.vpNewFolderDir
   value: {{ $.Values.global.vpNewFolderDir | quote | default "false" }}  
 {{- end }} {{- /*acm.app.policies.helmparameters */}}
@@ -521,19 +523,19 @@ Helpers from wrapper-app-of-apps-chart, used when .Values.global.vpWrapper is tr
 {{- define "clustergroup.app.globalvalues.prefixedvaluefiles" -}}
 {{- if $.Values.global.vpNewFolderDir }}
 - "$patternref/values-global.yaml"
-- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ $.Values.clusterGroup.name }}.yaml"
+- "$patternref/variants/{{ $.Values.global.hubVariant }}/values-{{ $.Values.clusterGroup.name }}.yaml"
 {{- if $.Values.global.clusterPlatform }}
-- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ $.Values.global.clusterPlatform }}.yaml"
+- "$patternref/variants/{{ $.Values.global.hubVariant }}/values-{{ $.Values.global.clusterPlatform }}.yaml"
   {{- if $.Values.global.clusterVersion }}
-- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ $.Values.global.clusterPlatform }}-{{ $.Values.global.clusterVersion }}.yaml"
+- "$patternref/variants/{{ $.Values.global.hubVariant }}/values-{{ $.Values.global.clusterPlatform }}-{{ $.Values.global.clusterVersion }}.yaml"
   {{- end }}
-- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ $.Values.global.clusterPlatform }}-{{ $.Values.clusterGroup.name }}.yaml"
+- "$patternref/variants/{{ $.Values.global.hubVariant }}/values-{{ $.Values.global.clusterPlatform }}-{{ $.Values.clusterGroup.name }}.yaml"
 {{- end }}
 {{- if $.Values.global.clusterVersion }}
-- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ $.Values.global.clusterVersion }}-{{ $.Values.clusterGroup.name }}.yaml"
+- "$patternref/variants/{{ $.Values.global.hubVariant }}/values-{{ $.Values.global.clusterVersion }}-{{ $.Values.clusterGroup.name }}.yaml"
 {{- end }}
 {{- if $.Values.global.localClusterName }}
-- "$patternref/variants/{{ $.Values.clusterGroup.name }}/values-{{ $.Values.global.localClusterName }}.yaml"
+- "$patternref/variants/{{ $.Values.global.hubVariant }}/values-{{ $.Values.global.localClusterName }}.yaml"
 {{- end }}
 {{- else }}
 - "$patternref/values-global.yaml"
