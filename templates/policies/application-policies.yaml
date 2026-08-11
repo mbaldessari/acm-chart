@@ -98,8 +98,6 @@ spec:
                         {{- end }}
                         parameters:
                         {{- include "acm.app.policies.helmparameters" $ | nindent 24 }}
-                        - name: clusterGroup.name
-                          value: {{ $group.name }}
                         {{- range $k, $v := $.Values.extraParametersNested }}
                         - name: {{ $k }}
                           value: {{ printf "%s" $v | quote }}
@@ -136,8 +134,6 @@ spec:
                       {{- end }}
                       parameters:
                       {{- include "acm.app.policies.helmparameters" $ | nindent 22 }}
-                      - name: clusterGroup.name
-                        value: {{ $group.name }}
                       {{- range $k, $v := $.Values.extraParametersNested }}
                       - name: {{ $k }}
                         value: {{ printf "%s" $v | quote }}
