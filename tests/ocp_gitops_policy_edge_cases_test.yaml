@@ -146,7 +146,7 @@ tests:
           value: region-one-gitops-policy
         equal:
           path: spec.policy-templates[0].objectDefinition.spec.object-templates[0].objectDefinition.spec.channel
-          value: gitops-1.21
+          value: gitops-1.22
 
   - it: should set default source when neither spokeGitops nor main gitops source is set
     set:
