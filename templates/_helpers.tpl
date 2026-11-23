@@ -368,7 +368,7 @@ redis:
       cpu: 250m
       memory: 128Mi
 repo:
-  image: quay.io/rhn_support_mbaldess/argocd:v3.5.6-stock
+  image: quay.io/rhn_support_mbaldess/argocd:v3.6.2-stock
   initContainers:
   - command:
     - bash
