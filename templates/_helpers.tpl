@@ -296,8 +296,6 @@ Default ArgoCD spec for spoke clusters. Rendered as YAML, parsed by fromYaml,
 and optionally merged with acm.customArgoYaml via mustMergeOverwrite.
 */}}
 {{- define "acm.default.argocd.spec" -}}
-image: quay.io/rhn_support_mbaldess/argocd
-version: v3.5.6-stock
 applicationSet:
   resources:
     limits:
